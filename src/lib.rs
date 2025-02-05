@@ -1,6 +1,6 @@
 #![allow(unused)]
-mod units;
-mod values;
+pub mod units;
+pub mod values;
 
 pub fn add(left: u64, right: u64) -> u64 {
     left + right
