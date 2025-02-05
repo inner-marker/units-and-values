@@ -1,26 +1,29 @@
 # Overview
 
-This packave defines enums and structs for units of measure, values using those units, and conversions between units.
+This package defines enums and structs for units of measure, values using those units, and conversions between units.
 
 Generally, default units reflect the SI unit.
 
-## SI Units
+Conversions are handled by the `convert` function in the respective unit's module.
 
-[x] Length - Meter
-[x] Mass - Kilogram
-[ ] Time - Second
-[ ] Electric Current - Ampere
-[x] Temperature - Kelvin
-[ ] Amount of Substance - Mole
-[ ] Luminous Intensity - Candela
+## Units
 
-## SI Derrived Units
+Implimentation of units enums and value structs is in progress. The following table shows the current implimentation status.
 
-[ ] Pressure - Pascal (N/m^2)
-[ ] Velocity - Meters per second (m/s)
-[ ] Frequency - Hertz (1/s)
-[ ] Energy - Joule (N m)
-[ ] Force - Newton (kg m/s^2)
-[ ] Power - Watt (J/s)
-[ ] Acceleration - Meters per second squared (m/s^2)
-[ ] Mixing Ratio - Kilogram per kilogram (kg/kg)
+|Unit | Value | Unit | SI Unit | Abbr. |
+|:---:|:---:|:---|:---| :---: |
+| ✓ | | Length | Meter | m |
+| ✓ | | Mass | Kilogram | kg |
+| ✓ | | Force | Newton | N |
+| ✓ | | Time | Second | s |
+| ✓ | ✓ | Temperature | Kelvin | K |
+| ✓ | ✓ | Velocity | Meters per Second | m/s |
+| ✓ | | Pressure | Pascal | Pa |
+| ✓ | | Bearing | Radian | rad |
+| | | Acceleration | Meters per Second Squared | m/s^2 |
+| | | Mixing Ratio | Kilogram per Kilogram | kg/kg |
+| | | Angular Velocity | Radians per Second | rad/s |
+| | | Energy | Joule | J |
+| | | Luminous Intensity | Candela | cd |
+| | | Amount of Substance | Mole | mol |
+| | | Electric Current | Ampere | A |

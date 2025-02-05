@@ -1,14 +1,20 @@
+#![allow(dead_code)]
+use crate::units::*;
 
 trait Value {
     /// Get the value in the given unit.
     /// Behind the scenes, the value is stored in the default unit,
     /// so the value is converted to the given unit before returning.
-    fn get(&self, unit: Box<dyn Unit>) -> Self;
+    /// The conversion uses the `convert` function of the Unit.
+    fn get(&self, unit: &UnitEnum) -> Self;
     /// Set self to the given value in the given unit.
     /// Behind the scenes, the value is stored in the default unit,
     /// so the value is converted to the default unit before storing.
-    fn set(&mut self, value: f64, unit: Box<dyn Unit>);
+    /// The conversion uses the `convert` function of the Unit.
+    fn set(&mut self, value: f64, unit: &UnitEnum);
 }
+
+// ---------------------------------------------------------
 
 /// TemperatureValue struct
 pub struct TemperatureValue {
@@ -22,31 +28,38 @@ impl Value for TemperatureValue {
     /// Get the value in the given unit.
     /// Behind the scenes, the value is stored in Kelvin,
     /// so the value is converted to the given unit before returning.
-    fn get(&self, unit: Box<dyn Unit>) -> TemperatureValue {
-        let value = match unit.abbr().as_str() {
-            "°F" => self.value * 9.0/5.0 - 459.67,
-            "°C" => self.value - 273.15,
-            "K" => self.value,
-            "°R" => self.value * 9.0/5.0,
-            _ => panic!("Invalid unit"),
-        };
-        TemperatureValue { value }
+    fn get(&self, unit: &UnitEnum) -> TemperatureValue {
+        // use the conversion function of the Unit
+        TemperatureValue { 
+            value: match unit {
+                UnitEnum::Temperature(temp_unit) => temp_unit.convert(
+                    self.value,
+                    &TemperatureUnit::default(),
+                    unit
+                ),
+                _ => panic!("Invalid unit for TemperatureValue"),
+            }
+        }
     }
 
     /// set self to the given value in the given unit
     /// Behind the scenes, the value is stored in the default unit,
     /// so the value is converted to Kelvin before storing.
-    fn set(&mut self, value: f64, unit: Box<dyn Unit>) {
-        self.value = match unit.abbr().as_str() {
-            "°F" => (value + 459.67) * 5.0/9.0,
-            "°C" => value + 273.15,
-            "K" => value,
-            "°R" => value * 5.0/9.0,
-            _ => panic!("Invalid unit"),
+    fn set(&mut self, value: f64, unit: &UnitEnum) {
+        // conver the value to Kelvin and store it
+        self.value = match unit {
+            UnitEnum::Temperature(temp_unit) => temp_unit.convert(
+                value,
+                unit,
+                &TemperatureUnit::default()
+            ),
+            _ => panic!("Invalid unit for TemperatureValue"),
         };
     }
 
 }
+
+// ---------------------------------------------------------
 
 /// SpeedValue struct
 pub struct SpeedValue {
@@ -60,29 +73,30 @@ impl Value for SpeedValue {
     /// Get the value in the given unit.
     /// Behind the scenes, the value is stored in Meters Per Second,
     /// so the value is converted from Meters Per Second to the given unit before returning.
-    fn get(&self, unit: Box<dyn Unit>) -> Self {
-        let value = match unit.abbr().as_str() {
-            "m/s" => self.value,
-            "ft/s" => self.value * 0.3048,
-            "km/h" => self.value * 0.277778,
-            "mph" => self.value * 0.44704,
-            "Kts" => self.value * 0.514444,
-            _ => panic!("Invalid unit"),
-        };
-        SpeedValue { value }
+    fn get(&self, unit: &UnitEnum) -> Self {
+        SpeedValue {
+            value: match unit {
+                UnitEnum::Speed(speed_unit) => speed_unit.convert(
+                    self.value,
+                    &SpeedUnit::default(),
+                    unit
+                ),
+                _ => panic!("Invalid unit for SpeedValue"),
+            }
+        }
     }
 
     /// Set self to the given value in the given unit.
     /// Behind the scenes, the value is stored in Meters Per Second,
     /// so the value is converted to Meters Per Second before storing.
-    fn set(&mut self, value: f64, unit: Box<dyn Unit>) {
-        self.value = match unit.abbr().as_str() {
-            "m/s" => value,
-            "ft/s" => value / 03.28084,
-            "km/h" => value / 3.6,
-            "mph" => value / 2.23694,
-            "Kts" => value / 1.94384,
-            _ => panic!("Invalid unit"),
+    fn set(&mut self, value: f64, unit: &UnitEnum) {
+        self.value = match unit {
+            UnitEnum::Speed(speed_unit) => speed_unit.convert(
+                value,
+                unit,
+                &SpeedUnit::default()
+            ),
+            _ => panic!("Invalid unit for SpeedValue"),
         };
     }
 }
