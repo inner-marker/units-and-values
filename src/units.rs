@@ -5,10 +5,11 @@ pub enum UnitEnum {
     Mass(MassUnit),
     Time(TimeUnit),
     Temperature(TemperatureUnit),
-    Speed(SpeedUnit),
+    Velocity(VelocityUnit),
     Force(ForceUnit),
     Pressure(PressureUnit),
     Bearing(BearingUnit),
+    Acceleration(AccelerationUnit),
 }
 
 /// Trait for a Unit of Measurement
@@ -564,9 +565,9 @@ impl std::fmt::Debug for TemperatureUnit {
 
 // ------------------------------------------------------------
 
-/// Enum for SpeedUnit
+/// Enum for VelocityUnit
 #[allow(dead_code)]
-pub enum SpeedUnit {
+pub enum VelocityUnit {
     Knots,
     MilesPerHour,
     KilometersPerHour,
@@ -574,11 +575,11 @@ pub enum SpeedUnit {
     MetersPerSecond,
 }
 
-impl Unit for SpeedUnit {
+impl Unit for VelocityUnit {
     /// Create a new instance of the Unit with the default value
     /// Default unit is Meters Per Second
     fn new() -> UnitEnum {
-        UnitEnum::Speed(SpeedUnit::MetersPerSecond)
+        UnitEnum::Velocity(VelocityUnit::MetersPerSecond)
     }
 
     /// Get the abbreviation of the unit
@@ -595,7 +596,7 @@ impl Unit for SpeedUnit {
     /// Get the default unit for the given unit type
     /// Default unit is Meters Per Second
     fn default() -> UnitEnum {
-        UnitEnum::Speed(SpeedUnit::MetersPerSecond)
+        UnitEnum::Velocity(VelocityUnit::MetersPerSecond)
     }
 
 
@@ -604,7 +605,7 @@ impl Unit for SpeedUnit {
     /// then converted to the target unit.
     fn convert(&self, value: f64, from_unit: &UnitEnum, to_unit: &UnitEnum) -> f64 {
         let value_mps = match from_unit {
-            UnitEnum::Speed(unit) => {
+            UnitEnum::Velocity(unit) => {
                 match unit.abbr().as_str() {
                     "m/s" => value,
                     "ft/s" => value * 0.3048,
@@ -614,10 +615,10 @@ impl Unit for SpeedUnit {
                     _ => panic!("Invalid unit"),
                 }
             },
-            _ => panic!("Invalid unit type for SpeedUnit conversion"),
+            _ => panic!("Invalid unit type for VelocityUnit conversion"),
         };
         match to_unit {
-            UnitEnum::Speed(unit) => {
+            UnitEnum::Velocity(unit) => {
                 match unit.abbr().as_str() {
                     "m/s" => value_mps,
                     "ft/s" => value_mps * 3.28084,
@@ -627,7 +628,7 @@ impl Unit for SpeedUnit {
                     _ => panic!("Invalid unit"),
                 }
             },
-            _ => panic!("Invalid unit type for SpeedUnit conversion"),
+            _ => panic!("Invalid unit type for VelocityUnit conversion"),
         }
     }
 
@@ -636,17 +637,17 @@ impl Unit for SpeedUnit {
     /// Example: "Knots" | "Kts" | "Knots (Kts)"
     fn from_str(&self, input: &str) -> UnitEnum {
         match input {
-            "Knots" | "Kts" | "Knots (Kts)" => UnitEnum::Speed(SpeedUnit::Knots),
-            "Miles Per Hour" | "mph" | "Miles Per Hour (mph)" => UnitEnum::Speed(SpeedUnit::MilesPerHour),
-            "Kilometers Per Hour" | "km/h" | "Kilometers Per Hour (km/h)" => UnitEnum::Speed(SpeedUnit::KilometersPerHour),
-            "Feet Per Second" | "ft/s" | "Feet Per Second (ft/s)" => UnitEnum::Speed(SpeedUnit::FeetPerSecond),
-            "Meters Per Second" | "m/s" | "Meters Per Second (m/s)" => UnitEnum::Speed(SpeedUnit::MetersPerSecond),
+            "Knots" | "Kts" | "Knots (Kts)" => UnitEnum::Velocity(VelocityUnit::Knots),
+            "Miles Per Hour" | "mph" | "Miles Per Hour (mph)" => UnitEnum::Velocity(VelocityUnit::MilesPerHour),
+            "Kilometers Per Hour" | "km/h" | "Kilometers Per Hour (km/h)" => UnitEnum::Velocity(VelocityUnit::KilometersPerHour),
+            "Feet Per Second" | "ft/s" | "Feet Per Second (ft/s)" => UnitEnum::Velocity(VelocityUnit::FeetPerSecond),
+            "Meters Per Second" | "m/s" | "Meters Per Second (m/s)" => UnitEnum::Velocity(VelocityUnit::MetersPerSecond),
             _ => panic!("Invalid unit"),
         }
     }
 }
 
-impl std::fmt::Display for SpeedUnit {
+impl std::fmt::Display for VelocityUnit {
     /// Display the unit name
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
@@ -659,9 +660,9 @@ impl std::fmt::Display for SpeedUnit {
     }
 }
 
-/// Implementing Debug trait for SpeedUnit
-impl std::fmt::Debug for SpeedUnit {
-    /// Implementing Debug trait for SpeedUnit
+/// Implementing Debug trait for VelocityUnit
+impl std::fmt::Debug for VelocityUnit {
+    /// Implementing Debug trait for VelocityUnit
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{self}")
     }
@@ -910,18 +911,22 @@ impl std::fmt::Debug for PressureUnit {
 // ------------------------------------------------------------
 
 /// Enum for BearingUnit
+/// Radians are the default unit.
 pub enum BearingUnit {
-    Degrees,
     Radians,
+    Degrees,
     Gradians,
     Mils,
 }
 
 /// Implementing Unit trait for BearingUnit
+/// 
+/// BearingUnit is used to represent angles in navigation and direction.
+/// Radians are the default unit.
 impl Unit for BearingUnit {
     /// Create a new instance of the Unit with the default value
     fn new() -> UnitEnum {
-        UnitEnum::Bearing(BearingUnit::Degrees)
+        UnitEnum::Bearing(BearingUnit::Radians)
     }
     
     /// Display the full name with abbreviation
@@ -940,8 +945,8 @@ impl Unit for BearingUnit {
     /// Example: "°"
     fn abbr(&self) -> String {
         match self {
-            Self::Degrees => String::from("°"),
             Self::Radians => String::from("rad"),
+            Self::Degrees => String::from("°"),
             Self::Gradians => String::from("grad"),
             Self::Mils => String::from("mil"),
         }
@@ -951,22 +956,25 @@ impl Unit for BearingUnit {
     /// The value is first converted to Degrees,
     /// then converted to the target unit.
     fn convert(&self, value: f64, from_unit: &UnitEnum, to_unit: &UnitEnum) -> f64 {
-        let value_degrees = match from_unit {
+        // store the value in radians
+        let value_radians = match from_unit {
             UnitEnum::Bearing(unit) => match unit.abbr().as_str() {
-                "°" => value,
-                "rad" => value * 57.2958,
-                "grad" => value * 0.9,
-                "mil" => value * 0.05625,
+                "rad" => value,
+                "°" => value * 0.0174533,
+                "grad" => value * 0.015708,
+                "mil" => value * 0.001,
                 _ => panic!("Invalid unit"),
             },
             _ => panic!("Invalid unit type for BearingUnit conversion"),
         };
+
+        // convert from default (radians) to target unit
         match to_unit {
             UnitEnum::Bearing(unit) => match unit.abbr().as_str() {
-                "°" => value_degrees,
-                "rad" => value_degrees / 57.2958,
-                "grad" => value_degrees / 0.9,
-                "mil" => value_degrees / 0.05625,
+                "rad" => value_radians,
+                "°" => value_radians / 0.0174533,
+                "grad" => value_radians / 0.015708,
+                "mil" => value_radians / 0.001,
                 _ => panic!("Invalid unit"),
             },
             _ => panic!("Invalid unit type for BearingUnit conversion"),
@@ -976,7 +984,7 @@ impl Unit for BearingUnit {
     /// Get the default unit for the given unit type
     /// Default unit is Degrees
     fn default() -> UnitEnum {
-        UnitEnum::Bearing(BearingUnit::Degrees)
+        UnitEnum::Bearing(BearingUnit::Radians)
     }
 
     /// Create a new instance of the Unit from a &str input.
@@ -1017,3 +1025,120 @@ impl std::fmt::Debug for BearingUnit {
 }
 
 // ------------------------------------------------------------
+
+/// Enum for AccelerationUnit
+/// MetersPerSecondSquared is the default unit.
+pub enum AccelerationUnit {
+    MetersPerSecondSquared,
+    FeetPerSecondSquared,
+    KilometersPerSecondSquared,
+    MilesPerHourPerSecond,
+    StandardGravity,
+}
+
+/// Implementing Unit trait for AccelerationUnit
+impl Unit for AccelerationUnit {
+    /// Create a new instance of the Unit with the default value
+    fn new() -> UnitEnum {
+        UnitEnum::Acceleration(AccelerationUnit::MetersPerSecondSquared)
+    }
+
+    /// Display the full name with abbreviation
+    /// Example: "Meters Per Second Squared (m/s²)"
+    fn name_full(&self) -> String {
+        String::from("{&self.fmt(f)} ({&self.abbr()})")
+    }
+
+    /// Display the short name without abbreviation.
+    /// Example: "Meters Per Second Squared"
+    fn name_short(&self) -> String {
+        String::from("{&self.fmt(f)}")
+    }
+
+    /// Get the abbreviation of the unit.
+    /// Example: "m/s²"
+    fn abbr(&self) -> String {
+        match self {
+            Self::MetersPerSecondSquared => String::from("m/s²"),
+            Self::FeetPerSecondSquared => String::from("ft/s²"),
+            Self::KilometersPerSecondSquared => String::from("km/s²"),
+            Self::MilesPerHourPerSecond => String::from("mph/s"),
+            Self::StandardGravity => String::from("g"),
+        }
+    }
+
+    /// Convert a value from one unit to another.
+    /// The value is first converted to Meters Per Second Squared,
+    /// then converted to the target unit.
+    fn convert(&self, value: f64, from_unit: &UnitEnum, to_unit: &UnitEnum) -> f64 {
+        let value_mps2 = match from_unit {
+            UnitEnum::Acceleration(unit) => match unit.abbr().as_str() {
+                "m/s²" => value,
+                "ft/s²" => value * 0.3048,
+                "km/s²" => value * 1000.0,
+                "mph/s" => value * 0.44704,
+                "g" => value * 9.80665,
+                _ => panic!("Invalid unit"),
+            },
+            _ => panic!("Invalid unit type for AccelerationUnit conversion"),
+        };
+        match to_unit {
+            UnitEnum::Acceleration(unit) => match unit.abbr().as_str() {
+                "m/s²" => value_mps2,
+                "ft/s²" => value_mps2 / 0.3048,
+                "km/s²" => value_mps2 / 1000.0,
+                "mph/s" => value_mps2 / 0.44704,
+                "g" => value_mps2 / 9.80665,
+                _ => panic!("Invalid unit"),
+            },
+            _ => panic!("Invalid unit type for AccelerationUnit conversion"),
+        }
+    }
+
+    /// Get the default unit for the given unit type
+    /// Default unit is Meters Per Second Squared
+    fn default() -> UnitEnum {
+        UnitEnum::Acceleration(AccelerationUnit::MetersPerSecondSquared)
+    }
+
+    /// Create a new instance of the Unit from a &str input.
+    /// The function supports full name, short name, and abbreviation.
+    /// Example: "Meters Per Second Squared" | "m/s²" | "Meters Per Second Squared (m/s²)"
+    fn from_str(&self, input: &str) -> UnitEnum {
+        match input {
+            "Meters Per Second Squared" | "m/s²" | "Meters Per Second Squared (m/s²)" => UnitEnum::Acceleration(AccelerationUnit::MetersPerSecondSquared),
+            "Feet Per Second Squared" | "ft/s²" | "Feet Per Second Squared (ft/s²)" => UnitEnum::Acceleration(AccelerationUnit::FeetPerSecondSquared),
+            "Kilometers Per Second Squared" | "km/s²" | "Kilometers Per Second Squared (km/s²)" => UnitEnum::Acceleration(AccelerationUnit::KilometersPerSecondSquared),
+            "Miles Per Hour Per Second" | "mph/s" | "Miles Per Hour Per Second (mph/s)" => UnitEnum::Acceleration(AccelerationUnit::MilesPerHourPerSecond),
+            "Standard Gravity" | "g" | "Standard Gravity (g)" => UnitEnum::Acceleration(AccelerationUnit::StandardGravity),
+            _ => panic!("Invalid unit"),
+        }
+    }
+    
+}
+
+/// Implementing Display trait for AccelerationUnit
+/// Display the unit name
+/// Example: "Meters Per Second Squared"
+impl std::fmt::Display for AccelerationUnit {
+    /// Display the unit name
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::MetersPerSecondSquared => write!(f, "Meters Per Second Squared"),
+            Self::FeetPerSecondSquared => write!(f, "Feet Per Second Squared"),
+            Self::KilometersPerSecondSquared => write!(f, "Kilometers Per Second Squared"),
+            Self::MilesPerHourPerSecond => write!(f, "Miles Per Hour Per Second"),
+            Self::StandardGravity => write!(f, "Standard Gravity"),
+        }
+    }
+}
+
+/// Implementing Debug trait for AccelerationUnit
+/// Display the unit name
+/// Example: "Meters Per Second Squared"
+impl std::fmt::Debug for AccelerationUnit {
+    /// Implementing Debug trait for AccelerationUnit
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{self}")
+    }
+}

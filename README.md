@@ -12,15 +12,15 @@ Implimentation of units enums and value structs is in progress. The following ta
 
 |Unit | Value | Unit | SI Unit | Abbr. |
 |:---:|:---:|:---|:---| :---: |
-| ✓ | | Length | Meter | m |
-| ✓ | | Mass | Kilogram | kg |
-| ✓ | | Force | Newton | N |
-| ✓ | | Time | Second | s |
+| ✓ | ✓ | Length | Meter | m |
+| ✓ | ✓ | Mass | Kilogram | kg |
+| ✓ | ✓ | Time | Second | s |
 | ✓ | ✓ | Temperature | Kelvin | K |
 | ✓ | ✓ | Velocity | Meters per Second | m/s |
-| ✓ | | Pressure | Pascal | Pa |
-| ✓ | | Bearing | Radian | rad |
-| | | Acceleration | Meters per Second Squared | m/s^2 |
+| ✓ | ✓ | Force | Newton | N |
+| ✓ | ✓ | Pressure | Pascal | Pa |
+| ✓ | ✓ | Bearing | Radian | rad |
+| ✓ | ✓ | Acceleration | Meters per Second Squared | m/s^2 |
 | | | Mixing Ratio | Kilogram per Kilogram | kg/kg |
 | | | Angular Velocity | Radians per Second | rad/s |
 | | | Energy | Joule | J |
