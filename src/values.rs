@@ -1,17 +1,41 @@
 #![allow(dead_code)]
 use crate::units::*;
 
-trait Value {
+trait Value: Sized{
     /// Get the value in the given unit.
     /// Behind the scenes, the value is stored in the default unit,
     /// so the value is converted to the given unit before returning.
     /// The conversion uses the `convert` function of the Unit.
+    /// 
+    /// # Example
+    /// ```rust
+    /// let length = LengthValue::new(100.0, &UnitEnum::Length(LengthUnit::Meters));
+    /// assert_eq!(length.get(&UnitEnum::Length(LengthUnit::Meters)).value, 100.0);
+    /// ```
     fn get(&self, unit: &UnitEnum) -> Self;
     /// Set self to the given value in the given unit.
     /// Behind the scenes, the value is stored in the default unit,
     /// so the value is converted to the default unit before storing.
     /// The conversion uses the `convert` function of the Unit.
+    /// 
+    /// # Example
+    /// ```rust
+    /// let mut length = LengthValue::new(100.0, &UnitEnum::Length(LengthUnit::Meters));
+    /// length.set(200.0, &UnitEnum::Length(LengthUnit::Meters));
+    /// assert_eq!(length.get(&UnitEnum::Length(LengthUnit::Meters)).value, 200.0);
+    /// ```
     fn set(&mut self, value: f64, unit: &UnitEnum);
+
+    /// Create a new Value with the given value and unit.
+    /// The value is stored in the default unit.
+    /// The value is converted to the default unit before storing.
+    /// 
+    /// # Example
+    /// ```rust
+    /// let length = LengthValue::new(100.0, &UnitEnum::Length(LengthUnit::Meters));
+    /// assert_eq!(length.get(&UnitEnum::Length(LengthUnit::Meters)).value, 100.0);
+    /// ```
+    fn new(value: f64, unit: &UnitEnum) -> Self;
 }
 
 // ---------------------------------------------------------
@@ -58,6 +82,28 @@ impl Value for LengthValue {
         };
     }
 
+    /// Create a new LengthValue with the given value and unit.
+    /// The value is stored in Meters by default.
+    /// The value is converted to Meters before storing.
+    /// 
+    /// # Example
+    /// ```rust
+    /// let length = LengthValue::new(100.0, &UnitEnum::Length(LengthUnit::Meters));
+    /// assert_eq!(length.get(&UnitEnum::Length(LengthUnit::Meters)).value, 100.0);
+    /// ```
+    fn new(value: f64, unit: &UnitEnum) -> LengthValue {
+        LengthValue {
+            value: match unit {
+                UnitEnum::Length(length_unit) => length_unit.convert(
+                    value,
+                    unit,
+                    &LengthUnit::default()
+                ),
+                _ => panic!("Invalid unit for LengthValue"),
+            }
+        }
+    }
+
 }
 
 // ---------------------------------------------------------
@@ -102,6 +148,28 @@ impl Value for MassValue {
             ),
             _ => panic!("Invalid unit for MassValue"),
         };
+    }
+
+    /// Create a new MassValue with the given value and unit.
+    /// The value is stored in Kilograms by default.
+    /// The value is converted to Kilograms before storing.
+    /// 
+    /// # Example
+    /// ```rust
+    /// let mass = MassValue::new(100.0, &UnitEnum::Mass(MassUnit::Kilograms));
+    /// assert_eq!(mass.get(&UnitEnum::Mass(MassUnit::Kilograms)).value, 100.0);
+    /// ```
+    fn new(value: f64, unit: &UnitEnum) -> MassValue {
+        MassValue {
+            value: match unit {
+                UnitEnum::Mass(mass_unit) => mass_unit.convert(
+                    value,
+                    unit,
+                    &MassUnit::default()
+                ),
+                _ => panic!("Invalid unit for MassValue"),
+            }
+        }
     }
 
 }
@@ -151,6 +219,28 @@ impl Value for TimeValue {
             _ => panic!("Invalid unit for TimeValue"),
         };
     }
+
+    /// Create a new TimeValue with the given value and unit.
+    /// The value is stored in Seconds by default.
+    /// The value is converted to Seconds before storing.
+    /// 
+    /// # Example
+    /// ```rust
+    /// let time = TimeValue::new(100.0, &UnitEnum::Time(TimeUnit::Seconds));
+    /// assert_eq!(time.get(&UnitEnum::Time(TimeUnit::Seconds)).value, 100.0);
+    /// ```
+    fn new(value: f64, unit: &UnitEnum) -> TimeValue {
+        TimeValue {
+            value: match unit {
+                UnitEnum::Time(time_unit) => time_unit.convert(
+                    value,
+                    unit,
+                    &TimeUnit::default()
+                ),
+                _ => panic!("Invalid unit for TimeValue"),
+            }
+        }
+    }
     
 }
 
@@ -197,6 +287,28 @@ impl Value for TemperatureValue {
         };
     }
 
+    /// Create a new TemperatureValue with the given value and unit.
+    /// The value is stored in Kelvin by default.
+    /// The value is converted to Kelvin before storing.
+    /// 
+    /// # Example
+    /// ```rust
+    /// let temperature = TemperatureValue::new(100.0, &UnitEnum::Temperature(TemperatureUnit::Kelvin));
+    /// assert_eq!(temperature.get(&UnitEnum::Temperature(TemperatureUnit::Kelvin)).value, 100.0);
+    /// ```
+    fn new(value: f64, unit: &UnitEnum) -> TemperatureValue {
+        TemperatureValue {
+            value: match unit {
+                UnitEnum::Temperature(temp_unit) => temp_unit.convert(
+                    value,
+                    unit,
+                    &TemperatureUnit::default()
+                ),
+                _ => panic!("Invalid unit for TemperatureValue"),
+            }
+        }
+    }
+
 }
 
 // ---------------------------------------------------------
@@ -238,6 +350,28 @@ impl Value for VelocityValue {
             ),
             _ => panic!("Invalid unit for VelocityValue"),
         };
+    }
+
+    /// Create a new VelocityValue with the given value and unit.
+    /// The value is stored in Meters Per Second by default.
+    /// The value is converted to Meters Per Second before storing.
+    /// 
+    /// # Example
+    /// ```rust
+    /// let velocity = VelocityValue::new(100.0, &UnitEnum::Velocity(VelocityUnit::MetersPerSecond));
+    /// assert_eq!(velocity.get(&UnitEnum::Velocity(VelocityUnit::MetersPerSecond)).value, 100.0);
+    /// ```
+    fn new(value: f64, unit: &UnitEnum) -> Self {
+        VelocityValue {
+            value: match unit {
+                UnitEnum::Velocity(velocity_unit) => velocity_unit.convert(
+                    value,
+                    unit,
+                    &VelocityUnit::default()
+                ),
+                _ => panic!("Invalid unit for VelocityValue"),
+            }
+        }
     }
 }
 
@@ -285,6 +419,28 @@ impl Value for ForceValue {
         };
     }
 
+    /// Create a new ForceValue with the given value and unit.
+    /// The value is stored in Newtons by default.
+    /// The value is converted to Newtons before storing.
+    /// 
+    /// # Example
+    /// ```rust
+    /// let force = ForceValue::new(100.0, &UnitEnum::Force(ForceUnit::Newtons));
+    /// assert_eq!(force.get(&UnitEnum::Force(ForceUnit::Newtons)).value, 100.0);
+    /// ```
+    fn new(value: f64, unit: &UnitEnum) -> ForceValue {
+        ForceValue {
+            value: match unit {
+                UnitEnum::Force(force_unit) => force_unit.convert(
+                    value,
+                    unit,
+                    &ForceUnit::default()
+                ),
+                _ => panic!("Invalid unit for ForceValue"),
+            }
+        }
+    }
+
 }
 
 
@@ -330,6 +486,28 @@ impl Value for PressureValue {
             ),
             _ => panic!("Invalid unit for PressureValue"),
         };
+    }
+
+    /// Create a new PressureValue with the given value and unit.
+    /// The value is stored in Pascals by default.
+    /// The value is converted to Pascals before storing.
+    /// 
+    /// # Example
+    /// ```rust
+    /// let pressure = PressureValue::new(100.0, &UnitEnum::Pressure(PressureUnit::Pascals));
+    /// assert_eq!(pressure.get(&UnitEnum::Pressure(PressureUnit::Pascals)).value, 100.0);
+    /// ```
+    fn new(value: f64, unit: &UnitEnum) -> PressureValue {
+        PressureValue {
+            value: match unit {
+                UnitEnum::Pressure(pressure_unit) => pressure_unit.convert(
+                    value,
+                    unit,
+                    &PressureUnit::default()
+                ),
+                _ => panic!("Invalid unit for PressureValue"),
+            }
+        }
     }
 
 }
@@ -380,6 +558,28 @@ impl Value for BearingValue {
         };
     }
 
+    /// Create a new BearingValue with the given value and unit.
+    /// The value is stored in Radians by default.
+    /// The value is converted to Radians before storing.
+    /// 
+    /// # Example
+    /// ```rust
+    /// let bearing = BearingValue::new(1.0, &UnitEnum::Bearing(BearingUnit::Radians));
+    /// assert_eq!(bearing.get(&UnitEnum::Bearing(BearingUnit::Radians)).value, 1.0);
+    /// ```
+    fn new(value: f64, unit: &UnitEnum) -> BearingValue {
+        BearingValue {
+            value: match unit {
+                UnitEnum::Bearing(bearing_unit) => bearing_unit.convert(
+                    value,
+                    unit,
+                    &BearingUnit::default()
+                ),
+                _ => panic!("Invalid unit for BearingValue"),
+            }
+        }
+    }
+
 }
 
 // ---------------------------------------------------------
@@ -428,4 +628,51 @@ impl Value for AccelerationValue {
         };
     }
 
+    /// Create a new AccelerationValue with the given value and unit.
+    /// The value is stored in Meters Per Second Squared by default.
+    /// The value is converted to Meters Per Second Squared before storing.
+    /// 
+    /// # Example
+    /// ```rust
+    /// let acceleration = AccelerationValue::new(100.0, &UnitEnum::Acceleration(AccelerationUnit::MetersPerSecondSquared));
+    /// assert_eq!(acceleration.get(&UnitEnum::Acceleration(AccelerationUnit::MetersPerSecondSquared)).value, 100.0);
+    /// ```
+    fn new(value: f64, unit: &UnitEnum) -> AccelerationValue {
+        AccelerationValue {
+            value: match unit {
+                UnitEnum::Acceleration(acceleration_unit) => acceleration_unit.convert(
+                    value,
+                    unit,
+                    &AccelerationUnit::default()
+                ),
+                _ => panic!("Invalid unit for AccelerationValue"),
+            }
+        }
+    }
+
+}
+
+
+// Tests
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::units::*;
+
+    #[test]
+    fn test_length_value() {
+        let length = LengthValue::new(100.0, &UnitEnum::Length(LengthUnit::Meters));
+        assert_eq!(length.get(&UnitEnum::Length(LengthUnit::Meters)).value, 100.0);
+        assert_eq!(length.get(&UnitEnum::Length(LengthUnit::Kilometers)).value, 0.1);
+        assert_eq!(length.get(&UnitEnum::Length(LengthUnit::Feet)).value, 328.084);
+        assert_eq!(length.get(&UnitEnum::Length(LengthUnit::Inches)).value, 3937.007874015748);
+    }
+
+    #[test]
+    fn test_mass_value() {
+        let mass = MassValue::new(100.0, &UnitEnum::Mass(MassUnit::Kilograms));
+        assert_eq!(mass.get(&UnitEnum::Mass(MassUnit::Kilograms)).value, 100.0);
+        assert_eq!(mass.get(&UnitEnum::Mass(MassUnit::Grams)).value, 100000.0);
+        assert_eq!(mass.get(&UnitEnum::Mass(MassUnit::PoundsMass)).value, 220.46226218488);
+    }
 }
