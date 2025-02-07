@@ -1,1144 +1,950 @@
-/// Enum containing all possible unit types
-#[derive(Debug)]
-pub enum UnitEnum {
-    Length(LengthUnit),
-    Mass(MassUnit),
-    Time(TimeUnit),
-    Temperature(TemperatureUnit),
-    Velocity(VelocityUnit),
-    Force(ForceUnit),
-    Pressure(PressureUnit),
-    Bearing(BearingUnit),
-    Acceleration(AccelerationUnit),
-}
+#![allow(unused)]
 
-/// Trait for a Unit of Measurement
-pub trait Unit: std::fmt::Debug + std::fmt::Display {
-    /// Create a new instance of the Unit with the default value
-    fn new() -> UnitEnum;
+use std::fmt::{Debug, Display};
+
+/// Define a trait for units of measure.
+/// The `UnitOfMeasure` trait defines a common interface for managing
+/// different types of measurement units. It provides several methods:
+///
+/// - `name_and_abbr`: Returns a formatted string with both the unit's name and its abbreviation,
+///   for example, "Meters (m)".
+/// - `abbr`: Retrieves the abbreviation of the unit (e.g., "m").
+/// - `name`: Retrieves the full name of the unit (e.g., "Meters").
+/// - `convert`: Converts a given value from the current unit to another unit by first converting
+///   to a common base unit (e.g., meters or kilograms) and then to the target unit.
+/// - `all_names`: Returns a vector containing all unit names.
+/// - `all_abbrs`: Returns a vector containing all unit abbreviations.
+/// - `all_names_and_abbrs`: Returns a vector with formatted strings of each unit's name and abbreviation.
+///
+/// This design eliminates the need for deeply nested conditional logic in handling unit conversions,
+/// ensuring a simple and maintainable approach to extending measurement units.
+pub trait UnitOfMeasure: Debug
+    + Copy
+    + Clone
+{
+    /// Get the name of the unit of measure with its abbreviation.
+    /// For example, "Meters (m)".
+    fn name_and_abbr (&self) -> String {
+        String::from(format!("{} ({})", self.name(), self.abbr()))
+    }
+
+    /// Get the abbreviation of the unit of measure.
+    /// For example, "m" for meters.
+    /// 
+    /// This function is the only place where hard-coding of the unit abbreviation is allowed.
+    fn abbr (&self) -> String;
     
-    /// Display the full name with abbreviation
-    /// Example: "Degrees Fehrenheit (°F)"
-    fn name_full(&self) -> String {
-        String::from("{&self.fmt(f)} ({&self.abbr()})")
-    }
+    /// Get the name of the unit of measure.
+    /// For example, "Meters".
+    /// 
+    /// This function is the only place where hard-coding of the unit name is allowed.
+    fn name (&self) -> String;
 
-    /// Display the short name with abbreviation
-    /// Example: "Fehrenheit"
-    fn name_short(&self) -> String {
-        String::from("{&self.fmt(f)}")
-    }
+    /// Convert a value from one unit of measure to another.
+    /// To eliminate exponentially growing nested match statements, 
+    /// each value is converted to the base unit of measure (e.g. meters or kilograms),
+    /// then converted to the desired unit of measure.
+    fn convert (&self, value: f64, to_unit: &Self) -> f64;
 
-    /// Get the abbreviation of the unit
-    /// Example: "°F"
-    fn abbr(&self) -> String;
+    /// Return a vector Strings of all of the names of the units of measure.
+    fn all_names () -> Vec<String>;
 
-    /// Get the default unit for the given unit type
-    fn default() -> UnitEnum;
+    /// Return a vector Strings of all of the abbreviations of the units of measure.
+    fn all_abbrs () -> Vec<String>;
 
-    /// Convert a value from one unit to another.
-    /// The value is first converted to the default unit,
-    /// then converted to the target unit.
-    fn convert(&self, value: f64, from_unit: &UnitEnum, to_unit: &UnitEnum) -> f64;
+    /// Return a vector Strings of all of the names and abbreviations of the units of measure.
+    fn all_names_and_abbrs () -> Vec<String>;
 
-    /// Create a new instance of the Unit from a &str input.
-    /// The function supports name_full, name_short, and abbreviation.
-    fn from_str(&self, input: &str) -> UnitEnum;
+    /// Create a new instance of the unit of measure from a string.
+    /// The function takes either the abbr, name, or name_and_abbr of the unit of measure.
+    /// Example: "m" | "Meters" | "Meters (m)" -> Some(LengthUnit::Meters)
+    fn from_str (unit_str: &str) -> Option<Self>;
+
+    /// Return the default unit of measure.
+    fn default () -> Self;
 
 }
 
-// ------------------------------------------------------------
-
-/// Enum for LengthUnit
+/// Define the units of measure for length.
+/// The base unit of measure is meters.
+#[derive(Debug, Copy, Clone)]
 pub enum LengthUnit {
+    Millimeters,
+    Centimeters,
     Meters,
     Kilometers,
-    Centimeters,
-    Millimeters,
     Inches,
     Feet,
     Yards,
-    Miles,
+    StatuteMiles,
     NauticalMiles,
 }
 
-/// Implementing Unit trait for LengthUnit
-impl Unit for LengthUnit {
-    /// Create a new instance of the Unit with the default value
-    fn new() -> UnitEnum {
-        UnitEnum::Length(LengthUnit::Meters)
-    }
-
-
-    /// Display the full name with abbreviation
-    /// Example: "Meters (m)"
-    fn name_full(&self) -> String {
-        String::from("{&self.fmt(f)} ({&self.abbr()})")
-    }
-
-    /// Display the short name without abbreviation.
-    /// Example: "Meters"
-    fn name_short(&self) -> String {
-        String::from("{&self.fmt(f)}")
-    }
-
-    /// Get the abbreviation of the unit.
-    /// Example: "m"
-    fn abbr(&self) -> String {
+impl UnitOfMeasure for LengthUnit {
+    /// Get the abbreviation of the unit of measure.
+    /// For example, "m" for meters.
+    fn abbr (&self) -> String {
         match self {
-            Self::Meters => String::from("m"),
-            Self::Kilometers => String::from("km"),
-            Self::Centimeters => String::from("cm"),
-            Self::Millimeters => String::from("mm"),
-            Self::Inches => String::from("in"),
-            Self::Feet => String::from("ft"),
-            Self::Yards => String::from("yd"),
-            Self::Miles => String::from("mi"),
-            Self::NauticalMiles => String::from("Nmi"),
+            LengthUnit::Millimeters => "mm".to_string(),
+            LengthUnit::Centimeters => "cm".to_string(),
+            LengthUnit::Meters => "m".to_string(),
+            LengthUnit::Kilometers => "km".to_string(),
+            LengthUnit::Inches => "in".to_string(),
+            LengthUnit::Feet => "ft".to_string(),
+            LengthUnit::Yards => "yd".to_string(),
+            LengthUnit::StatuteMiles => "mi".to_string(),
+            LengthUnit::NauticalMiles => "nmi".to_string(),
         }
     }
 
-    /// Convert a value from one unit to another.
-    /// The value is first converted to Meters,
-    /// then converted to the target unit.
-    fn convert(&self, value: f64, from_unit: &UnitEnum, to_unit: &UnitEnum) -> f64 {
-        let value_meters = match from_unit {
-            UnitEnum::Length(unit) => {
-                match unit.abbr().as_str() {
-                    "m" => value,
-                    "km" => value * 1000.0,
-                    "cm" => value * 0.01,
-                    "mm" => value * 0.001,
-                    "in" => value * 0.0254,
-                    "ft" => value * 0.3048,
-                    "yd" => value * 0.9144,
-                    "mi" => value * 1609.34,
-                    "Nmi" => value * 1852.0,
-                    _ => panic!("Invalid unit"),
-                }
-            },
-            _ => panic!("Invalid unit type for LengthUnit conversion"),
+    /// Get the name of the unit of measure.
+    /// For example, "Meters".
+    fn name (&self) -> String {
+        match self {
+            LengthUnit::Millimeters => "Millimeters".to_string(),
+            LengthUnit::Centimeters => "Centimeters".to_string(),
+            LengthUnit::Meters => "Meters".to_string(),
+            LengthUnit::Kilometers => "Kilometers".to_string(),
+            LengthUnit::Inches => "Inches".to_string(),
+            LengthUnit::Feet => "Feet".to_string(),
+            LengthUnit::Yards => "Yards".to_string(),
+            LengthUnit::StatuteMiles => "Statute Miles".to_string(),
+            LengthUnit::NauticalMiles => "Nautical Miles".to_string(),
+        }
+    }
+
+    /// Convert a value from one unit of measure to another.
+    /// To eliminate exponentially growing nested match statements,
+    /// each value is converted to the base unit of measure (e.g. meters or kilograms),
+    /// then converted to the desired unit of measure.
+    /// 
+    /// # Examples
+    /// ```rust
+    /// let length_value = 5280.0;
+    /// let length_output = length_unit_test.convert(length_value, &LengthUnit::Miles);
+    /// assert_eq!(length_output, 1.0);
+    /// ```
+    fn convert (&self, value: f64, to_unit: &Self) -> f64 {
+        let length_meters = match self {
+            LengthUnit::Millimeters => value / 1000.0,
+            LengthUnit::Centimeters => value / 100.0,
+            LengthUnit::Meters => value,
+            LengthUnit::Kilometers => value * 1000.0,
+            LengthUnit::Inches => value / 39.3701,
+            LengthUnit::Feet => value / 3.28084,
+            LengthUnit::Yards => value / 1.09361,
+            LengthUnit::StatuteMiles => value / 0.000621371,
+            LengthUnit::NauticalMiles => value / 0.000539957,
         };
-        match to_unit {
-            UnitEnum::Length(unit) => {
-                match unit.abbr().as_str() {
-                    "m" => value_meters,
-                    "km" => value_meters / 1000.0,
-                    "cm" => value_meters / 0.01,
-                    "mm" => value_meters / 0.001,
-                    "in" => value_meters / 0.0254,
-                    "ft" => value_meters / 0.3048,
-                    "yd" => value_meters / 0.9144,
-                    "mi" => value_meters / 1609.34,
-                    "Nmi" => value_meters / 1852.0,
-                    _ => panic!("Invalid unit"),
-                }
-            },
-            _ => panic!("Invalid unit type for LengthUnit conversion"),
+
+        let length_output = match to_unit {
+            LengthUnit::Millimeters => length_meters * 1000.0,
+            LengthUnit::Centimeters => length_meters * 100.0,
+            LengthUnit::Meters => length_meters,
+            LengthUnit::Kilometers => length_meters / 1000.0,
+            LengthUnit::Inches => length_meters * 39.3701,
+            LengthUnit::Feet => length_meters * 3.28084,
+            LengthUnit::Yards => length_meters * 1.09361,
+            LengthUnit::StatuteMiles => length_meters * 0.000621371,
+            LengthUnit::NauticalMiles => length_meters * 0.000539957,
+        };
+        length_output
+    }
+
+    /// Return a vector Strings of all of the names of the units of measure.
+    fn all_names () -> Vec<String> {
+        vec![
+            LengthUnit::Millimeters.name(),
+            LengthUnit::Centimeters.name(),
+            LengthUnit::Meters.name(),
+            LengthUnit::Kilometers.name(),
+            LengthUnit::Inches.name(),
+            LengthUnit::Feet.name(),
+            LengthUnit::Yards.name(),
+            LengthUnit::StatuteMiles.name(),
+            LengthUnit::NauticalMiles.name(),
+        ]
+    }
+
+    /// Return a vector Strings of all of the abbreviations of the units of measure.
+    fn all_abbrs () -> Vec<String> {
+        vec![
+            LengthUnit::Millimeters.abbr(),
+            LengthUnit::Centimeters.abbr(),
+            LengthUnit::Meters.abbr(),
+            LengthUnit::Kilometers.abbr(),
+            LengthUnit::Inches.abbr(),
+            LengthUnit::Feet.abbr(),
+            LengthUnit::Yards.abbr(),
+            LengthUnit::StatuteMiles.abbr(),
+            LengthUnit::NauticalMiles.abbr(),
+        ]
+    }
+
+    /// Return a vector Strings of all of the names and abbreviations of the units of measure.
+    fn all_names_and_abbrs () -> Vec<String> {
+        vec![
+            LengthUnit::Millimeters.name_and_abbr(),
+            LengthUnit::Centimeters.name_and_abbr(),
+            LengthUnit::Meters.name_and_abbr(),
+            LengthUnit::Kilometers.name_and_abbr(),
+            LengthUnit::Inches.name_and_abbr(),
+            LengthUnit::Feet.name_and_abbr(),
+            LengthUnit::Yards.name_and_abbr(),
+            LengthUnit::StatuteMiles.name_and_abbr(),
+            LengthUnit::NauticalMiles.name_and_abbr(),
+        ]
+    }
+
+    /// Create a new instance of the unit of measure from a string.
+    /// The function takes either the abbr, name, or name_and_abbr of the unit of measure.
+    /// Example:
+    /// ```rust
+    /// let unit = LengthUnit::from_string("m");
+    /// assert_eq!(unit, Some(LengthUnit::Meters));
+    /// ```
+    fn from_str (unit_str: &str) -> Option<Self> {
+        // abbreviations
+        let millimeters_abbr = LengthUnit::Millimeters.abbr();
+        let centimeters_abbr = LengthUnit::Centimeters.abbr();
+        let meters_abbr = LengthUnit::Meters.abbr();
+        let kilometers_abbr = LengthUnit::Kilometers.abbr();
+        let inches_abbr = LengthUnit::Inches.abbr();
+        let feet_abbr = LengthUnit::Feet.abbr();
+        let yards_abbr = LengthUnit::Yards.abbr();
+        let statute_miles_abbr = LengthUnit::StatuteMiles.abbr();
+        let nautical_miles_abbr = LengthUnit::NauticalMiles.abbr();
+
+        // names
+        let millimeters_name = LengthUnit::Millimeters.name();
+        let centimeters_name = LengthUnit::Centimeters.name();
+        let meters_name = LengthUnit::Meters.name();
+        let kilometers_name = LengthUnit::Kilometers.name();
+        let inches_name = LengthUnit::Inches.name();
+        let feet_name = LengthUnit::Feet.name();
+        let yards_name = LengthUnit::Yards.name();
+        let statute_miles_name = LengthUnit::StatuteMiles.name();
+        let nautical_miles_name = LengthUnit::NauticalMiles.name();
+
+        // full names
+        let millimeters_name_and_abbr = LengthUnit::Millimeters.name_and_abbr();
+        let centimeters_name_and_abbr = LengthUnit::Centimeters.name_and_abbr();
+        let meters_name_and_abbr = LengthUnit::Meters.name_and_abbr();
+        let kilometers_name_and_abbr = LengthUnit::Kilometers.name_and_abbr();
+        let inches_name_and_abbr = LengthUnit::Inches.name_and_abbr();
+        let feet_name_and_abbr = LengthUnit::Feet.name_and_abbr();
+        let yards_name_and_abbr = LengthUnit::Yards.name_and_abbr();
+        let statute_miles_name_and_abbr = LengthUnit::StatuteMiles.name_and_abbr();
+        let nautical_miles_name_and_abbr = LengthUnit::NauticalMiles.name_and_abbr();
+
+        // match
+        match unit_str {
+            s if s == millimeters_abbr || s == millimeters_name || s == millimeters_name_and_abbr => Some(LengthUnit::Millimeters),
+            s if s == centimeters_abbr || s == centimeters_name || s == centimeters_name_and_abbr => Some(LengthUnit::Centimeters),
+            s if s == meters_abbr || s == meters_name || s == meters_name_and_abbr => Some(LengthUnit::Meters),
+            s if s == kilometers_abbr || s == kilometers_name || s == kilometers_name_and_abbr => Some(LengthUnit::Kilometers),
+            s if s == inches_abbr || s == inches_name || s == inches_name_and_abbr => Some(LengthUnit::Inches),
+            s if s == feet_abbr || s == feet_name || s == feet_name_and_abbr => Some(LengthUnit::Feet),
+            s if s == yards_abbr || s == yards_name || s == yards_name_and_abbr => Some(LengthUnit::Yards),
+            s if s == statute_miles_abbr || s == statute_miles_name || s == statute_miles_name_and_abbr => Some(LengthUnit::StatuteMiles),
+            s if s == nautical_miles_abbr || s == nautical_miles_name || s == nautical_miles_name_and_abbr => Some(LengthUnit::NauticalMiles),
+            _ => None,
         }
     }
 
-    /// Get the default unit for the given unit type
-    /// Default unit is Meters
-    fn default() -> UnitEnum {
-        UnitEnum::Length(LengthUnit::Meters)
-    }
-
-    /// Create a new instance of the Unit from a &str input.
-    /// The function supports full name, short name, and abbreviation.
-    /// Example: "Meters" | "m" | "Meters (m)"
-    fn from_str(&self, input: &str) -> UnitEnum {
-        match input {
-            "Meters" | "m" | "Meters (m)" => UnitEnum::Length(LengthUnit::Meters),
-            "Kilometers" | "km" | "Kilometers (km)" => UnitEnum::Length(LengthUnit::Kilometers),
-            "Centimeters" | "cm" | "Centimeters (cm)" => UnitEnum::Length(LengthUnit::Centimeters),
-            "Millimeters" | "mm" | "Millimeters (mm)" => UnitEnum::Length(LengthUnit::Millimeters),
-            "Inches" | "in" | "Inches (in)" => UnitEnum::Length(LengthUnit::Inches),
-            "Feet" | "ft" | "Feet (ft)" => UnitEnum::Length(LengthUnit::Feet),
-            "Yards" | "yd" | "Yards (yd)" => UnitEnum::Length(LengthUnit::Yards),
-            "Miles" | "mi" | "Miles (mi)" => UnitEnum::Length(LengthUnit::Miles),
-            "Nautical Miles" | "Nmi" | "Nautical Miles (Nmi)" => UnitEnum::Length(LengthUnit::NauticalMiles),
-            _ => panic!("Invalid unit"),
-        }
+    /// Return the default unit of measure.
+    /// The default unit of measure is meters.
+    fn default () -> Self {
+        LengthUnit::Meters
     }
 }
 
-/// Implementing Display trait for LengthUnit
-impl std::fmt::Display for LengthUnit {
-    /// Display the unit name
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            Self::Meters => write!(f, "Meters"),
-            Self::Kilometers => write!(f, "Kilometers"),
-            Self::Centimeters => write!(f, "Centimeters"),
-            Self::Millimeters => write!(f, "Millimeters"),
-            Self::Inches => write!(f, "Inches"),
-            Self::Feet => write!(f, "Feet"),
-            Self::Yards => write!(f, "Yards"),
-            Self::Miles => write!(f, "Miles"),
-            Self::NauticalMiles => write!(f, "Nautical Miles"),
-        }
-    }
-}
+// --------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
 
-/// Implementing Debug trait for LengthUnit
-impl std::fmt::Debug for LengthUnit {
-    /// Implementing Debug trait for LengthUnit
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{self}")
-    }
-}
-
-// ------------------------------------------------------------
-
-/// Enum for MassUnit
+/// Define the units of measure for mass.
+/// The base unit of measure is kilograms.
+/// The MassUnit enum implements the UnitOfMeasure trait.
+/// It provides methods to get the name and abbreviation of the unit,
+/// convert a value to a different unit of measure, and return all unit names and abbreviations.
+/// 
+/// # Examples
+/// ```rust
+/// let mass_value = 1.0;
+/// let mass_output = mass_unit_test.convert(mass_value, &MassUnit::Pounds);
+/// assert_eq!(mass_output, 2.20462);
+/// ```
+#[derive(Debug, Copy, Clone)]
 pub enum MassUnit {
     Kilograms,
-    Grams,
-    Milligrams,
     PoundsMass,
-    Ounces,
-    Slugs,
 }
 
-/// Implementing Unit trait for MassUnit
-impl Unit for MassUnit {
-    /// Create a new instance of the Unit with the default value
-    fn new() -> UnitEnum {
-        UnitEnum::Mass(MassUnit::Kilograms)
-    }
-
-    /// Display the full name with abbreviation
-    /// Example: "Kilograms (kg)"
-    fn name_full(&self) -> String {
-        String::from("{&self.fmt(f)} ({&self.abbr()})")
-    }
-
-    /// Display the short name without abbreviation.
-    /// Example: "Kilograms"
-    fn name_short(&self) -> String {
-        String::from("{&self.fmt(f)}")
-    }
-
-    /// Get the abbreviation of the unit.
-    /// Example: "kg"
-    fn abbr(&self) -> String {
+/// Implement the UnitOfMeasure trait for the MassUnit enum.
+impl UnitOfMeasure for MassUnit {
+    /// Get the abbreviation of the unit of measure.
+    /// For example, "kg" for kilograms.
+    fn abbr (&self) -> String {
         match self {
-            Self::Kilograms => String::from("kg"),
-            Self::Grams => String::from("g"),
-            Self::Milligrams => String::from("mg"),
-            Self::PoundsMass => String::from("lbm"),
-            Self::Ounces => String::from("oz"),
-            Self::Slugs => String::from("slugs"),
+            MassUnit::Kilograms => "kg".to_string(),
+            MassUnit::PoundsMass => "lb".to_string(),
         }
     }
 
-    /// Convert a value from one unit to another.
-    /// The value is first converted to Kilograms,
-    /// then converted to the target unit.
-    fn convert(&self, value: f64, from_unit: &UnitEnum, to_unit: &UnitEnum) -> f64 {
-        let value_kilograms = match from_unit {
-            UnitEnum::Mass(unit) => {
-                match unit.abbr().as_str() {
-                    "kg" => value,
-                    "g" => value * 0.001,
-                    "mg" => value * 0.000001,
-                    "lbm" => value * 0.453592,
-                    "oz" => value * 0.0283495,
-                    "slugs" => value * 14.5939,
-                    _ => panic!("Invalid unit"),
-                }
-            },
-            _ => panic!("Invalid unit type for MassUnit conversion"),
+    /// Get the name of the unit of measure.
+    /// For example, "Kilograms".
+    fn name (&self) -> String {
+        match self {
+            MassUnit::Kilograms => "Kilograms".to_string(),
+            MassUnit::PoundsMass => "Pounds".to_string(),
+        }
+    }
+
+    /// Convert a value from one unit of measure to another.
+    /// To eliminate exponentially growing nested match statements,
+    /// each value is converted to the base unit of measure (e.g. meters or kilograms),
+    /// then converted to the desired unit of measure.
+    fn convert (&self, value: f64, to_unit: &Self) -> f64 {
+        // Conver to kilograms
+        let mass_kilograms = match self {
+            MassUnit::Kilograms => value,
+            MassUnit::PoundsMass => value / 2.20462,
         };
-        match to_unit {
-            UnitEnum::Mass(unit) => {
-                match unit.abbr().as_str() {
-                    "kg" => value_kilograms,
-                    "g" => value_kilograms / 0.001,
-                    "mg" => value_kilograms / 0.000001,
-                    "lbm" => value_kilograms / 0.453592,
-                    "oz" => value_kilograms / 0.0283495,
-                    "slugs" => value_kilograms / 14.5939,
-                    _ => panic!("Invalid unit"),
-                }
-            },
-            _ => panic!("Invalid unit type for MassUnit conversion"),
+
+        // Convert to desired unit
+        let mass_output = match to_unit {
+            MassUnit::Kilograms => mass_kilograms,
+            MassUnit::PoundsMass => mass_kilograms * 2.20462,
+        };
+        mass_output
+    }
+
+    /// Return a vector Strings of all of the names of the units of measure.
+    fn all_names () -> Vec<String> {
+        vec![
+            MassUnit::Kilograms.name(),
+            MassUnit::PoundsMass.name(),
+        ]
+    }
+
+    /// Return a vector Strings of all of the abbreviations of the units of measure.
+    fn all_abbrs () -> Vec<String> {
+        vec![
+            MassUnit::Kilograms.abbr(),
+            MassUnit::PoundsMass.abbr(),
+        ]
+    }
+
+    /// Return a vector Strings of all of the names and abbreviations of the units of measure.
+    fn all_names_and_abbrs () -> Vec<String> {
+        vec![
+            MassUnit::Kilograms.name_and_abbr(),
+            MassUnit::PoundsMass.name_and_abbr(),
+        ]
+    }
+
+    /// Create a new instance of the unit of measure from a string.
+    /// The function takes either the abbr, name, or name_and_abbr of the unit of measure.
+    /// Example:
+    /// ```rust
+    /// let unit = MassUnit::from_string("kg");
+    /// assert_eq!(unit, Some(MassUnit::Kilograms));
+    /// ```
+    fn from_str (unit_str: &str) -> Option<Self> {
+        // abbreviations
+        let kilograms_abbr = MassUnit::Kilograms.abbr();
+        let pounds_abbr = MassUnit::PoundsMass.abbr();
+
+        // names
+        let kilograms_name = MassUnit::Kilograms.name();
+        let pounds_name = MassUnit::PoundsMass.name();
+
+        // full names
+        let kilograms_name_and_abbr = MassUnit::Kilograms.name_and_abbr();
+        let pounds_name_and_abbr = MassUnit::PoundsMass.name_and_abbr();
+
+        // match
+        match unit_str {
+            s if s == kilograms_abbr || s == kilograms_name || s == kilograms_name_and_abbr => Some(MassUnit::Kilograms),
+            s if s == pounds_abbr || s == pounds_name || s == pounds_name_and_abbr => Some(MassUnit::PoundsMass),
+            _ => None,
         }
     }
 
-    /// Get the default unit for the given unit type
-    /// Default unit is Kilograms
-    /// Example: "Kilograms" | "kg" | "Kilograms (kg)"
-    fn default() -> UnitEnum {
-        UnitEnum::Mass(MassUnit::Kilograms)
-    }
-
-    /// Create a new instance of the Unit from a &str input.
-    /// The function supports full name, short name, and abbreviation.
-    /// Example: "Kilograms" | "kg" | "Kilograms (kg)"
-    fn from_str(&self, input: &str) -> UnitEnum {
-        match input {
-            "Kilograms" | "kg" | "Kilograms (kg)" => UnitEnum::Mass(MassUnit::Kilograms),
-            "Grams" | "g" | "Grams (g)" => UnitEnum::Mass(MassUnit::Grams),
-            "Milligrams" | "mg" | "Milligrams (mg)" => UnitEnum::Mass(MassUnit::Milligrams),
-            "Pounds Mass" | "lbm" | "Pounds Mass (lbm)" => UnitEnum::Mass(MassUnit::PoundsMass),
-            "Ounces" | "oz" | "Ounces (oz)" => UnitEnum::Mass(MassUnit::Ounces),
-            "Slugs" | "slugs" | "Slugs (slugs)" => UnitEnum::Mass(MassUnit::Slugs),
-            _ => panic!("Invalid unit"),
-        }
+    /// Return the default unit of measure.
+    /// The default unit of measure is kilograms.
+    fn default () -> Self {
+        MassUnit::Kilograms
     }
 }
 
-/// Implementing Display trait for MassUnit
-/// Display the unit name
-/// Example: "Kilograms"
-impl std::fmt::Display for MassUnit {
-    /// Display the unit name
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            Self::Kilograms => write!(f, "Kilograms"),
-            Self::Grams => write!(f, "Grams"),
-            Self::Milligrams => write!(f, "Milligrams"),
-            Self::PoundsMass => write!(f, "Pounds Mass"),
-            Self::Ounces => write!(f, "Ounces"),
-            Self::Slugs => write!(f, "Slugs"),
-        }
-    }
-}
+// --------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
 
-/// Implementing Debug trait for MassUnit
-impl std::fmt::Debug for MassUnit {
-    /// Implementing Debug trait for MassUnit
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{self}")
-    }
-}
-
-// ------------------------------------------------------------
-
-/// Enum for TimeUnit
+/// Define the units of measure for time.
+/// 
+/// The TimeUnit enum implements the UnitOfMeasure trait.
+/// 
+/// It provides methods to get the name and abbreviation of the unit,
+/// convert a value to a different unit of measure, and return all unit names and abbreviations.
+/// 
+/// The default unit of measure is seconds.
+#[derive(Debug, Copy, Clone)]
 pub enum TimeUnit {
     Seconds,
-    Milliseconds,
-    Microseconds,
-    Nanoseconds,
     Minutes,
     Hours,
     Days,
     Weeks,
+    Years,
 }
 
-/// Implementing Unit trait for TimeUnit
-impl Unit for TimeUnit {
-    /// Create a new instance of the Unit with the default value
-    /// Default unit is Seconds
-    fn new() -> UnitEnum {
-        UnitEnum::Time(TimeUnit::Seconds)
-    }
-    
-    /// Display the full name with abbreviation
-    /// Example: "Seconds (s)"
-    fn name_full(&self) -> String {
-        String::from("{&self.fmt(f)} ({&self.abbr()})")
-    }
-
-    /// Display the short name without abbreviation.
-    /// Example: "Seconds"
-    fn name_short(&self) -> String {
-        String::from("{&self.fmt(f)}")
-    }
-
-    /// Get the abbreviation of the unit.
-    /// Example: "s"
-    fn abbr(&self) -> String {
+/// Implement the UnitOfMeasure trait for the TimeUnit enum.
+impl UnitOfMeasure for TimeUnit {
+    /// Get the abbreviation of the unit of measure.
+    /// For example, "s" for seconds.
+    fn abbr (&self) -> String {
         match self {
-            Self::Seconds => String::from("s"),
-            Self::Milliseconds => String::from("ms"),
-            Self::Microseconds => String::from("µs"),
-            Self::Nanoseconds => String::from("ns"),
-            Self::Minutes => String::from("min"),
-            Self::Hours => String::from("hr"),
-            Self::Days => String::from("days"),
-            Self::Weeks => String::from("weeks"),
+            TimeUnit::Seconds => "s".to_string(),
+            TimeUnit::Minutes => "min".to_string(),
+            TimeUnit::Hours => "hr".to_string(),
+            TimeUnit::Days => "d".to_string(),
+            TimeUnit::Weeks => "wk".to_string(),
+            TimeUnit::Years => "yr".to_string(),
         }
     }
 
-    /// Convert a value from one unit to another.
-    /// The value is first converted to Seconds,
-    /// then converted to the target unit.
-    fn convert(&self, value: f64, from_unit: &UnitEnum, to_unit: &UnitEnum) -> f64 {
-        let value_seconds = match from_unit {
-            UnitEnum::Time(unit) => {
-                match unit.abbr().as_str() {
-                    "s" => value,
-                    "ms" => value * 0.001,
-                    "µs" => value * 0.000001,
-                    "ns" => value * 0.000000001,
-                    "min" => value * 60.0,
-                    "hr" => value * 3600.0,
-                    "days" => value * 86400.0,
-                    "weeks" => value * 604800.0,
-                    _ => panic!("Invalid unit"),
-                }
-            },
-            _ => panic!("Invalid unit type for TimeUnit conversion"),
+    /// Get the name of the unit of measure.
+    /// For example, "Seconds".
+    fn name (&self) -> String {
+        match self {
+            TimeUnit::Seconds => "Seconds".to_string(),
+            TimeUnit::Minutes => "Minutes".to_string(),
+            TimeUnit::Hours => "Hours".to_string(),
+            TimeUnit::Days => "Days".to_string(),
+            TimeUnit::Weeks => "Weeks".to_string(),
+            TimeUnit::Years => "Years".to_string(),
+        }
+    }
+
+    /// Convert a value from one unit of measure to another.
+    /// To eliminate exponentially growing nested match statements,
+    /// each value is converted to the base unit of measure (e.g. meters or kilograms),
+    /// then converted to the desired unit of measure.
+    fn convert (&self, value: f64, to_unit: &Self) -> f64 {
+        // Convert to seconds
+        let time_seconds = match self {
+            TimeUnit::Seconds => value,
+            TimeUnit::Minutes => value * 60.0,
+            TimeUnit::Hours => value * 3600.0,
+            TimeUnit::Days => value * 86400.0,
+            TimeUnit::Weeks => value * 604800.0,
+            TimeUnit::Years => value * 31536000.0,
         };
-        match to_unit {
-            UnitEnum::Time(unit) => {
-                match unit.abbr().as_str() {
-                    "s" => value_seconds,
-                    "ms" => value_seconds / 0.001,
-                    "µs" => value_seconds / 0.000001,
-                    "ns" => value_seconds / 0.000000001,
-                    "min" => value_seconds / 60.0,
-                    "hr" => value_seconds / 3600.0,
-                    "days" => value_seconds / 86400.0,
-                    "weeks" => value_seconds / 604800.0,
-                    _ => panic!("Invalid unit"),
-                }
-            },
-            _ => panic!("Invalid unit type for TimeUnit conversion"),
-        }
+
+        // Convert to desired unit
+        let time_output = match to_unit {
+            TimeUnit::Seconds => time_seconds,
+            TimeUnit::Minutes => time_seconds / 60.0,
+            TimeUnit::Hours => time_seconds / 3600.0,
+            TimeUnit::Days => time_seconds / 86400.0,
+            TimeUnit::Weeks => time_seconds / 604800.0,
+            TimeUnit::Years => time_seconds / 31536000.0,
+        };
+        time_output
     }
 
-    /// Get the default unit for the given unit type
-    /// Default unit is Seconds
-    fn default() -> UnitEnum {
-        UnitEnum::Time(TimeUnit::Seconds)
+    /// Return a vector Strings of all of the names of the units of measure.
+    fn all_names () -> Vec<String> {
+        vec![
+            TimeUnit::Seconds.name(),
+            TimeUnit::Minutes.name(),
+            TimeUnit::Hours.name(),
+            TimeUnit::Days.name(),
+            TimeUnit::Weeks.name(),
+            TimeUnit::Years.name(),
+        ]
     }
 
-    /// Create a new instance of the Unit from a &str input.
-    /// The function supports full name, short name, and abbreviation.
-    /// Example: "Seconds" | "s" | "Seconds (s)"
-    fn from_str(&self, input: &str) -> UnitEnum {
-        match input {
-            "Seconds" | "s" | "Seconds (s)" => UnitEnum::Time(TimeUnit::Seconds),
-            "Milliseconds" | "ms" | "Milliseconds (ms)" => UnitEnum::Time(TimeUnit::Milliseconds),
-            "Microseconds" | "µs" | "Microseconds (µs)" => UnitEnum::Time(TimeUnit::Microseconds),
-            "Nanoseconds" | "ns" | "Nanoseconds (ns)" => UnitEnum::Time(TimeUnit::Nanoseconds),
-            "Minutes" | "min" | "Minutes (min)" => UnitEnum::Time(TimeUnit::Minutes),
-            "Hours" | "hr" | "Hours (hr)" => UnitEnum::Time(TimeUnit::Hours),
-            "Days" | "days" | "Days (days)" => UnitEnum::Time(TimeUnit::Days),
-            "Weeks" | "weeks" | "Weeks (weeks)" => UnitEnum::Time(TimeUnit::Weeks),
-            _ => panic!("Invalid unit"),
+    /// Return a vector Strings of all of the abbreviations of the units of measure.
+    fn all_abbrs () -> Vec<String> {
+        vec![
+            TimeUnit::Seconds.abbr(),
+            TimeUnit::Minutes.abbr(),
+            TimeUnit::Hours.abbr(),
+            TimeUnit::Days.abbr(),
+            TimeUnit::Weeks.abbr(),
+            TimeUnit::Years.abbr(),
+        ]
+    }
+
+    /// Return a vector Strings of all of the names and abbreviations of the units of measure.
+    fn all_names_and_abbrs () -> Vec<String> {
+        vec![
+            TimeUnit::Seconds.name_and_abbr(),
+            TimeUnit::Minutes.name_and_abbr(),
+            TimeUnit::Hours.name_and_abbr(),
+            TimeUnit::Days.name_and_abbr(),
+            TimeUnit::Weeks.name_and_abbr(),
+            TimeUnit::Years.name_and_abbr(),
+        ]
+    }
+
+    /// Create a new instance of the unit of measure from a string.
+    /// The function takes either the abbr, name, or name_and_abbr of the unit of measure.
+    /// For example: "s" | "Seconds" | "Seconds (s)" -> Some(TimeUnit::Seconds)
+    fn from_str (unit_str: &str) -> Option<Self> {
+        // abbreviations
+        let seconds_abbr = TimeUnit::Seconds.abbr();
+        let minutes_abbr = TimeUnit::Minutes.abbr();
+        let hours_abbr = TimeUnit::Hours.abbr();
+        let days_abbr = TimeUnit::Days.abbr();
+        let weeks_abbr = TimeUnit::Weeks.abbr();
+        let years_abbr = TimeUnit::Years.abbr();
+
+        // names
+        let seconds_name = TimeUnit::Seconds.name();
+        let minutes_name = TimeUnit::Minutes.name();
+        let hours_name = TimeUnit::Hours.name();
+        let days_name = TimeUnit::Days.name();
+        let weeks_name = TimeUnit::Weeks.name();
+        let years_name = TimeUnit::Years.name();
+
+        // full names
+        let seconds_name_and_abbr = TimeUnit::Seconds.name_and_abbr();
+        let minutes_name_and_abbr = TimeUnit::Minutes.name_and_abbr();
+        let hours_name_and_abbr = TimeUnit::Hours.name_and_abbr();
+        let days_name_and_abbr = TimeUnit::Days.name_and_abbr();
+        let weeks_name_and_abbr = TimeUnit::Weeks.name_and_abbr();
+        let years_name_and_abbr = TimeUnit::Years.name_and_abbr();
+
+        // match
+        match unit_str {
+            s if s == seconds_abbr || s == seconds_name || s == seconds_name_and_abbr => Some(TimeUnit::Seconds),
+            s if s == minutes_abbr || s == minutes_name || s == minutes_name_and_abbr => Some(TimeUnit::Minutes),
+            s if s == hours_abbr || s == hours_name || s == hours_name_and_abbr => Some(TimeUnit::Hours),
+            s if s == days_abbr || s == days_name || s == days_name_and_abbr => Some(TimeUnit::Days),
+            s if s == weeks_abbr || s == weeks_name || s == weeks_name_and_abbr => Some(TimeUnit::Weeks),
+            s if s == years_abbr || s == years_name || s == years_name_and_abbr => Some(TimeUnit::Years),
+            _ => None,
         }
+
+    }
+
+    /// Return the default unit of measure.
+    /// The default unit of measure is seconds.
+    fn default () -> Self {
+        TimeUnit::Seconds
     }
 }
 
-/// Implementing Display trait for TimeUnit
-impl std::fmt::Display for TimeUnit {
-    /// Display the unit name
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            Self::Seconds => write!(f, "Seconds"),
-            Self::Milliseconds => write!(f, "Milliseconds"),
-            Self::Microseconds => write!(f, "Microseconds"),
-            Self::Nanoseconds => write!(f, "Nanoseconds"),
-            Self::Minutes => write!(f, "Minutes"),
-            Self::Hours => write!(f, "Hours"),
-            Self::Days => write!(f, "Days"),
-            Self::Weeks => write!(f, "Weeks"),
-        }
-    }
-}
+// --------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
 
-/// Implementing Debug trait for TimeUnit
-impl std::fmt::Debug for TimeUnit {
-    /// Implementing Debug trait for TimeUnit
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{self}")
-    }
-}
-
-// ------------------------------------------------------------
-
-
-/// Enum for TemperatureUnit
+/// Define the units of measure for temperature.
+/// 
+/// The TemperatureUnit enum implements the UnitOfMeasure trait.
+/// 
+/// It provides methods to get the name and abbreviation of the unit,
+/// convert a value to a different unit of measure, and return all unit names and abbreviations.
+/// 
+/// The default unit of measure is Kelvin.
+#[derive(Debug, Copy, Clone)]
 pub enum TemperatureUnit {
     Kelvin,
-    Celcius,
-    Rankine,
-    Fehrenheit,
+    Celsius,
+    Fahrenheit,
+    Rankine,   
 }
 
-/// Implementing Unit trait for TemperatureUnit
-impl Unit for TemperatureUnit {
-    /// Create a new instance of the Unit with the default value
-    fn new() -> UnitEnum {
-        UnitEnum::Temperature(TemperatureUnit::Kelvin)
-    }
-
-    /// Display the full name with abbreviation
-    /// Example: "Degrees Fehrenheit (°F)"
-    fn name_full(&self) -> String {
-        String::from("Degrees {&self.fmt(f)} ({&self.abbr()})")
-    }
-
-    /// Display the short name without abbreviation.
-    /// Example: "Fehrenheit"
-    fn name_short(&self) -> String {
-        String::from("{&self.fmt(f)}")
-    }
-
-    /// Get the abbreviation of the unit.
-    /// Example: "°F"
-    fn abbr(&self) -> String {
+/// Implement the UnitOfMeasure trait for the TemperatureUnit enum.
+/// 
+/// The TemperatureUnit enum provides methods to get the name and abbreviation of the unit,
+/// convert a value to a different unit of measure, and return all unit names and abbreviations.
+/// 
+/// The default unit of measure is Kelvin.
+impl UnitOfMeasure for TemperatureUnit {
+    /// Get the abbreviation of the unit of measure.
+    /// For example, "K" for Kelvin.
+    fn abbr (&self) -> String {
         match self {
-            Self::Fehrenheit => String::from("°F"),
-            Self::Celcius => String::from("°C"),
-            Self::Kelvin => String::from("K"),
-            Self::Rankine => String::from("°R"),
+            TemperatureUnit::Kelvin => "K".to_string(),
+            TemperatureUnit::Celsius => "°C".to_string(),
+            TemperatureUnit::Fahrenheit => "°F".to_string(),
+            TemperatureUnit::Rankine => "°R".to_string(),
         }
     }
 
-    /// Convert a value from one unit to another.
-    /// The value is first converted to Kelvin,
-    /// then converted to the target unit.
-    fn convert(&self, value: f64, from_unit: &UnitEnum, to_unit: &UnitEnum) -> f64 {
-        let value_kelvin = match from_unit {
-            UnitEnum::Temperature(unit) => {
-                match unit.abbr().as_str() {
-                    "°F" => (value + 459.67) * 5.0/9.0,
-                    "°C" => value + 273.15,
-                    "K" => value,
-                    "°R" => value * 5.0/9.0,
-                    _ => panic!("Invalid unit"),
-                }
-            },
-            _ => panic!("Invalid unit type for Temperature conversion"),
+    /// Get the name of the unit of measure.
+    /// For example, "Kelvin".
+    fn name (&self) -> String {
+        match self {
+            TemperatureUnit::Kelvin => "Kelvin".to_string(),
+            TemperatureUnit::Celsius => "Celsius".to_string(),
+            TemperatureUnit::Fahrenheit => "Fahrenheit".to_string(),
+            TemperatureUnit::Rankine => "Rankine".to_string(),
+        }
+    }
+
+    /// Convert a value from one unit of measure to another.
+    /// To eliminate exponentially growing nested match statements,
+    /// each value is converted to the base unit of measure (e.g. meters or kilograms),
+    /// then converted to the desired unit of measure.
+    fn convert (&self, value: f64, to_unit: &Self) -> f64 {
+        // Convert to Kelvin
+        let temp_kelvin = match self {
+            TemperatureUnit::Kelvin => value,
+            TemperatureUnit::Celsius => value + 273.15,
+            TemperatureUnit::Fahrenheit => (value + 459.67) * 5.0 / 9.0,
+            TemperatureUnit::Rankine => value * 5.0 / 9.0,
         };
-        match to_unit {
-            UnitEnum::Temperature(unit) => {
-                match unit.abbr().as_str() {
-                    "°F" => value_kelvin * 9.0/5.0 - 459.67,
-                    "°C" => value_kelvin - 273.15,
-                    "K" => value_kelvin,
-                    "°R" => value_kelvin * 9.0/5.0,
-                    _ => panic!("Invalid unit"),
-                }
-            },
-            _ => panic!("Invalid unit type for Temperature conversion"),
+
+        // Convert to desired unit
+        let temp_output = match to_unit {
+            TemperatureUnit::Kelvin => temp_kelvin,
+            TemperatureUnit::Celsius => temp_kelvin - 273.15,
+            TemperatureUnit::Fahrenheit => temp_kelvin * 9.0 / 5.0 - 459.67,
+            TemperatureUnit::Rankine => temp_kelvin * 9.0 / 5.0,
+        };
+        temp_output
+    }
+
+    /// Return a vector Strings of all of the names of the units of measure.
+    fn all_names () -> Vec<String> {
+        vec![
+            TemperatureUnit::Kelvin.name(),
+            TemperatureUnit::Celsius.name(),
+            TemperatureUnit::Fahrenheit.name(),
+            TemperatureUnit::Rankine.name(),
+        ]
+    }
+
+    /// Return a vector Strings of all of the abbreviations of the units of measure.
+    /// For example, "K" | "°C" | "°F" | "°R"
+    fn all_abbrs () -> Vec<String> {
+        vec![
+            TemperatureUnit::Kelvin.abbr(),
+            TemperatureUnit::Celsius.abbr(),
+            TemperatureUnit::Fahrenheit.abbr(),
+            TemperatureUnit::Rankine.abbr(),
+        ]
+    }
+
+    /// Return a vector Strings of all of the names and abbreviations of the units of measure.
+    /// For example, "Kelvin (K)" | "Celsius (°C)" | "Fahrenheit (°F)" | "Rankine (°R)"
+    fn all_names_and_abbrs () -> Vec<String> {
+        vec![
+            TemperatureUnit::Kelvin.name_and_abbr(),
+            TemperatureUnit::Celsius.name_and_abbr(),
+            TemperatureUnit::Fahrenheit.name_and_abbr(),
+            TemperatureUnit::Rankine.name_and_abbr(),
+        ]
+    }
+
+    /// Create a new instance of the unit of measure from a string.
+    /// The function takes either the abbr, name, or name_and_abbr of the unit of measure.
+    /// For example: "K" | "Kelvin" | "Kelvin (K)" -> Some(TemperatureUnit::Kelvin)
+    fn from_str(unit_str: &str) -> Option<Self> {
+        // abbreviations
+        let kelvin_abbr = TemperatureUnit::Kelvin.abbr();
+        let celsius_abbr = TemperatureUnit::Celsius.abbr();
+        let fahrenheit_abbr = TemperatureUnit::Fahrenheit.abbr();
+        let rankine_abbr = TemperatureUnit::Rankine.abbr();
+
+        // names
+        let kelvin_name = TemperatureUnit::Kelvin.name();
+        let celsius_name = TemperatureUnit::Celsius.name();
+        let fahrenheit_name = TemperatureUnit::Fahrenheit.name();
+        let rankine_name = TemperatureUnit::Rankine.name();
+
+        // full names
+        let kelvin_name_and_abbr = TemperatureUnit::Kelvin.name_and_abbr();
+        let celsius_name_and_abbr = TemperatureUnit::Celsius.name_and_abbr();
+        let fahrenheit_name_and_abbr = TemperatureUnit::Fahrenheit.name_and_abbr();
+        let rankine_name_and_abbr = TemperatureUnit::Rankine.name_and_abbr();
+
+        // match the unit str to the unit using the abbreviations, names, and full names variables
+        match unit_str {
+            s if s == kelvin_abbr || s == kelvin_name || s == kelvin_name_and_abbr => Some(TemperatureUnit::Kelvin),
+            s if s == celsius_abbr || s == celsius_name || s == celsius_name_and_abbr => Some(TemperatureUnit::Celsius),
+            s if s == fahrenheit_abbr || s == fahrenheit_name || s == fahrenheit_name_and_abbr => Some(TemperatureUnit::Fahrenheit),
+            s if s == rankine_abbr || s == rankine_name || s == rankine_name_and_abbr => Some(TemperatureUnit::Rankine),
+            _ => None,
         }
     }
 
-    /// Get the default unit for the given unit type
-    /// Default unit is Kelvin
-    fn default() -> UnitEnum {
-        UnitEnum::Temperature(TemperatureUnit::Kelvin)
-    }
-
-    /// Create a new instance of the Unit from a &str input.
-    /// The function supports full name, short name, and abbreviation.
-    fn from_str(&self, input: &str) -> UnitEnum {
-        match input {
-            "Fehrenheit" | "°F" | "Degrees Fehrenheit (°F)"=> UnitEnum::Temperature(TemperatureUnit::Fehrenheit),
-            "Celcius" | "°C" | "Degrees Celcius (°C)" => UnitEnum::Temperature(TemperatureUnit::Celcius),
-            "Kelvin" | "K" | "Degrees Kelvin (K)" => UnitEnum::Temperature(TemperatureUnit::Kelvin),
-            "Rankine" | "°R" | "Degrees Rankine (°R)" => UnitEnum::Temperature(TemperatureUnit::Rankine),
-            _ => panic!("Invalid unit"),
-        }
-    }
+    /// Return the default unit of measure.
+    /// The default unit of measure is Kelvin.
+    fn default () -> Self {
+        TemperatureUnit::Kelvin
+    }   
 }
 
-/// Implementing Display trait for TemperatureUnit
-/// Display the unit name
-impl std::fmt::Display for TemperatureUnit {
-    /// Display the unit name
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            Self::Fehrenheit => write!(f, "Fehrenheit"),
-            Self::Celcius => write!(f, "Celcius"),
-            Self::Kelvin => write!(f, "Kelvin"),
-            Self::Rankine => write!(f, "Rankine"),
-        }
-    }
-}
 
-/// Implementing Debug trait for TemperatureUnit
-impl std::fmt::Debug for TemperatureUnit {
-    /// Implementing Debug trait for TemperatureUnit
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{self}")
-    }
-}
+// --------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
 
-// ------------------------------------------------------------
-
-/// Enum for VelocityUnit
-#[allow(dead_code)]
+/// Define the units of measure for velocity.
+/// The base unit of measure is meters per second.
+#[derive(Debug, Copy, Clone)]
 pub enum VelocityUnit {
-    Knots,
-    MilesPerHour,
+    MetersPerSecond,
     KilometersPerHour,
     FeetPerSecond,
-    MetersPerSecond,
+    MilesPerHour,
+    Knots,
 }
 
-impl Unit for VelocityUnit {
-    /// Create a new instance of the Unit with the default value
-    /// Default unit is Meters Per Second
-    fn new() -> UnitEnum {
-        UnitEnum::Velocity(VelocityUnit::MetersPerSecond)
-    }
-
-    /// Get the abbreviation of the unit
-    fn abbr(&self) -> String {
+/// Implement the UnitOfMeasure trait for the VelocityUnit enum.
+impl UnitOfMeasure for VelocityUnit {
+    /// Get the abbreviation of the unit of measure.
+    /// For example, "m/s" for meters per second.
+    fn abbr (&self) -> String {
         match self {
-            Self::Knots => String::from("Kts"),
-            Self::MilesPerHour => String::from("mph"),
-            Self::KilometersPerHour => String::from("km/h"),
-            Self::FeetPerSecond => String::from("ft/s"),
-            Self::MetersPerSecond => String::from("m/s"),
+            VelocityUnit::MetersPerSecond => "m/s".to_string(),
+            VelocityUnit::KilometersPerHour => "km/h".to_string(),
+            VelocityUnit::FeetPerSecond => "ft/s".to_string(),
+            VelocityUnit::MilesPerHour => "mph".to_string(),
+            VelocityUnit::Knots => "kn".to_string(),
         }
     }
 
-    /// Get the default unit for the given unit type
-    /// Default unit is Meters Per Second
-    fn default() -> UnitEnum {
-        UnitEnum::Velocity(VelocityUnit::MetersPerSecond)
+    /// Get the name of the unit of measure.
+    /// For example, "Meters per Second".
+    fn name (&self) -> String {
+        match self {
+            VelocityUnit::MetersPerSecond => "Meters per Second".to_string(),
+            VelocityUnit::KilometersPerHour => "Kilometers per Hour".to_string(),
+            VelocityUnit::FeetPerSecond => "Feet per Second".to_string(),
+            VelocityUnit::MilesPerHour => "Miles per Hour".to_string(),
+            VelocityUnit::Knots => "Knots".to_string(),
+        }
     }
 
-
-    /// Convert a value from one unit to another.
-    /// The value is first converted to Meters Per Second,
-    /// then converted to the target unit.
-    fn convert(&self, value: f64, from_unit: &UnitEnum, to_unit: &UnitEnum) -> f64 {
-        let value_mps = match from_unit {
-            UnitEnum::Velocity(unit) => {
-                match unit.abbr().as_str() {
-                    "m/s" => value,
-                    "ft/s" => value * 0.3048,
-                    "km/h" => value * 0.277778,
-                    "mph" => value * 0.44704,
-                    "Kts" => value * 0.514444,
-                    _ => panic!("Invalid unit"),
-                }
-            },
-            _ => panic!("Invalid unit type for VelocityUnit conversion"),
+    /// Convert a value from one unit of measure to another.
+    /// To eliminate exponentially growing nested match statements,
+    /// each value is converted to the base unit of measure (e.g. meters or kilograms),
+    /// then converted to the desired unit of measure.
+    fn convert (&self, value: f64, to_unit: &Self) -> f64 {
+        // Convert to meters per second
+        let velocity_meters_per_second = match self {
+            VelocityUnit::MetersPerSecond => value,
+            VelocityUnit::KilometersPerHour => value / 3.6,
+            VelocityUnit::FeetPerSecond => value / 3.28084,
+            VelocityUnit::MilesPerHour => value / 2.23694,
+            VelocityUnit::Knots => value / 1.94384,
         };
-        match to_unit {
-            UnitEnum::Velocity(unit) => {
-                match unit.abbr().as_str() {
-                    "m/s" => value_mps,
-                    "ft/s" => value_mps * 3.28084,
-                    "km/h" => value_mps * 3.6,
-                    "mph" => value_mps * 2.23694,
-                    "Kts" => value_mps * 1.94384,
-                    _ => panic!("Invalid unit"),
-                }
-            },
-            _ => panic!("Invalid unit type for VelocityUnit conversion"),
+
+        // Convert to desired unit
+        let velocity_output = match to_unit {
+            VelocityUnit::MetersPerSecond => velocity_meters_per_second,
+            VelocityUnit::KilometersPerHour => velocity_meters_per_second * 3.6,
+            VelocityUnit::FeetPerSecond => velocity_meters_per_second * 3.28084,
+            VelocityUnit::MilesPerHour => velocity_meters_per_second * 2.23694,
+            VelocityUnit::Knots => velocity_meters_per_second * 1.94384,
+        };
+        velocity_output
+    }
+
+    /// Return a vector Strings of all of the names of the units of measure.
+    fn all_names () -> Vec<String> {
+        vec![
+            VelocityUnit::MetersPerSecond.name(),
+            VelocityUnit::KilometersPerHour.name(),
+            VelocityUnit::FeetPerSecond.name(),
+            VelocityUnit::MilesPerHour.name(),
+            VelocityUnit::Knots.name(),
+        ]
+    }
+
+    /// Return a vector Strings of all of the abbreviations of the units of measure.
+    fn all_abbrs () -> Vec<String> {
+        vec![
+            VelocityUnit::MetersPerSecond.abbr(),
+            VelocityUnit::KilometersPerHour.abbr(),
+            VelocityUnit::FeetPerSecond.abbr(),
+            VelocityUnit::MilesPerHour.abbr(),
+            VelocityUnit::Knots.abbr(),
+        ]
+    }
+
+    /// Return a vector Strings of all of the names and abbreviations of the units of measure.
+    fn all_names_and_abbrs () -> Vec<String> {
+        vec![
+            VelocityUnit::MetersPerSecond.name_and_abbr(),
+            VelocityUnit::KilometersPerHour.name_and_abbr(),
+            VelocityUnit::FeetPerSecond.name_and_abbr(),
+            VelocityUnit::MilesPerHour.name_and_abbr(),
+            VelocityUnit::Knots.name_and_abbr(),
+        ]
+    }
+
+    /// Create a new instance of the unit of measure from a string.
+    /// The function takes either the abbr, name, or name_and_abbr of the unit of measure.
+    /// For example: "m/s" | "Meters per Second" | "Meters per Second (m/s)" -> Some(VelocityUnit::MetersPerSecond)
+    fn from_str (unit_str: &str) -> Option<Self> {
+        // abbreviations
+        let meterspersecond_abbr = VelocityUnit::MetersPerSecond.abbr();
+        let kilometersperhour_abbr = VelocityUnit::KilometersPerHour.abbr();
+        let feetpersecond_abbr = VelocityUnit::FeetPerSecond.abbr();
+        let milesperhour_abbr = VelocityUnit::MilesPerHour.abbr();
+        let knots_abbr = VelocityUnit::Knots.abbr();
+
+        // names
+        let meterspersecond_name = VelocityUnit::MetersPerSecond.name();
+        let kilometersperhour_name = VelocityUnit::KilometersPerHour.name();
+        let feetpersecond_name = VelocityUnit::FeetPerSecond.name();
+        let milesperhour_name = VelocityUnit::MilesPerHour.name();
+        let knots_name = VelocityUnit::Knots.name();
+
+        // full names
+        let meterspersecond_name_and_abbr = VelocityUnit::MetersPerSecond.name_and_abbr();
+        let kilometersperhour_name_and_abbr = VelocityUnit::KilometersPerHour.name_and_abbr();
+        let feetpersecond_name_and_abbr = VelocityUnit::FeetPerSecond.name_and_abbr();
+        let milesperhour_name_and_abbr = VelocityUnit::MilesPerHour.name_and_abbr();
+        let knots_name_and_abbr = VelocityUnit::Knots.name_and_abbr();
+
+        // match the unit str to the unit using the abbreviations, names, and full names variables
+        match unit_str {
+            s if s == meterspersecond_abbr || s == meterspersecond_name || s == meterspersecond_name_and_abbr => Some(VelocityUnit::MetersPerSecond),
+            s if s == kilometersperhour_abbr || s == kilometersperhour_name || s == kilometersperhour_name_and_abbr => Some(VelocityUnit::KilometersPerHour),
+            s if s == feetpersecond_abbr || s == feetpersecond_name || s == feetpersecond_name_and_abbr => Some(VelocityUnit::FeetPerSecond),
+            s if s == milesperhour_abbr || s == milesperhour_name || s == milesperhour_name_and_abbr => Some(VelocityUnit::MilesPerHour),
+            s if s == knots_abbr || s == knots_name || s == knots_name_and_abbr => Some(VelocityUnit::Knots),
+            _ => None,
         }
     }
 
-    /// Create a new instance of the Unit from a &str input.
-    /// The function supports full name, short name, and abbreviation.
-    /// Example: "Knots" | "Kts" | "Knots (Kts)"
-    fn from_str(&self, input: &str) -> UnitEnum {
-        match input {
-            "Knots" | "Kts" | "Knots (Kts)" => UnitEnum::Velocity(VelocityUnit::Knots),
-            "Miles Per Hour" | "mph" | "Miles Per Hour (mph)" => UnitEnum::Velocity(VelocityUnit::MilesPerHour),
-            "Kilometers Per Hour" | "km/h" | "Kilometers Per Hour (km/h)" => UnitEnum::Velocity(VelocityUnit::KilometersPerHour),
-            "Feet Per Second" | "ft/s" | "Feet Per Second (ft/s)" => UnitEnum::Velocity(VelocityUnit::FeetPerSecond),
-            "Meters Per Second" | "m/s" | "Meters Per Second (m/s)" => UnitEnum::Velocity(VelocityUnit::MetersPerSecond),
-            _ => panic!("Invalid unit"),
-        }
+    /// Return the default unit of measure.
+    /// The default unit of measure is meters per second.
+    fn default () -> Self {
+        VelocityUnit::MetersPerSecond
     }
+
+    
 }
 
-impl std::fmt::Display for VelocityUnit {
-    /// Display the unit name
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            Self::Knots => write!(f, "Knots"),
-            Self::MilesPerHour => write!(f, "Miles Per Hour"),
-            Self::KilometersPerHour => write!(f, "Kilometers Per Hour"),
-            Self::FeetPerSecond => write!(f, "Feet Per Second"),
-            Self::MetersPerSecond => write!(f, "Meters Per Second"),
-        }
-    }
-}
+// --------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
 
-/// Implementing Debug trait for VelocityUnit
-impl std::fmt::Debug for VelocityUnit {
-    /// Implementing Debug trait for VelocityUnit
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{self}")
-    }
-}
-
-// ------------------------------------------------------------
-
-/// Enum for ForceUnit
+/// Define the units of measure for force.
+/// The base unit of measure is newtons.
+#[derive(Debug, Copy, Clone)]
 pub enum ForceUnit {
     Newtons,
     PoundsForce,
     KilogramsForce,
 }
 
-/// Implementing Unit trait for ForceUnit
-impl Unit for ForceUnit {
-    /// Create a new instance of the Unit with the default value
-    fn new() -> UnitEnum {
-        UnitEnum::Force(ForceUnit::Newtons)
-    }
-
-    /// Display the full name with abbreviation
-    /// Example: "Newtons (N)"
-    fn name_full(&self) -> String {
-        String::from("{&self.fmt(f)} ({&self.abbr()})")
-    }
-
-    /// Display the short name without abbreviation.
-    /// Example: "Newtons"
-    fn name_short(&self) -> String {
-        String::from("{&self.fmt(f)}")
-    }
-
-    /// Get the abbreviation of the unit.
-    /// Example: "N"
-    fn abbr(&self) -> String {
+/// Implement the UnitOfMeasure trait for the ForceUnit enum.
+impl UnitOfMeasure for ForceUnit {
+    /// Get the abbreviation of the unit of measure.
+    /// For example, "N" for newtons.
+    fn abbr (&self) -> String {
         match self {
-            Self::Newtons => String::from("N"),
-            Self::PoundsForce => String::from("lbf"),
-            Self::KilogramsForce => String::from("kgf"),
+            ForceUnit::Newtons => "N".to_string(),
+            ForceUnit::PoundsForce => "lbf".to_string(),
+            ForceUnit::KilogramsForce => "kgf".to_string(),
         }
     }
 
-    /// Convert a value from one unit to another.
-    /// The value is first converted to Newtons,
-    /// then converted to the target unit.
-    fn convert(&self, value: f64, from_unit: &UnitEnum, to_unit: &UnitEnum) -> f64 {
-        let value_newtons = match from_unit {
-            UnitEnum::Force(unit) => match unit.abbr().as_str() {
-                "N" => value,
-                "lbf" => value * 4.44822,
-                "kgf" => value * 9.80665,
-                _ => panic!("Invalid unit"),
-            },
-            _ => panic!("Invalid unit type for ForceUnit conversion"),
-        };
-        match to_unit {
-            UnitEnum::Force(unit) => match unit.abbr().as_str() {
-                "N" => value_newtons,
-                "lbf" => value_newtons / 4.44822,
-                "kgf" => value_newtons / 9.80665,
-                _ => panic!("Invalid unit"),
-            },
-            _ => panic!("Invalid unit type for ForceUnit conversion"),
-        }
-    }
-
-    /// Get the default unit for the given unit type
-    /// Default unit is Newtons
-    fn default() -> UnitEnum {
-        UnitEnum::Force(ForceUnit::Newtons)
-    }
-
-    /// Create a new instance of the Unit from a &str input.
-    /// The function supports full name, short name, and abbreviation.
-    /// Example: "Newtons" | "N" | "Newtons (N)"
-    fn from_str(&self, input: &str) -> UnitEnum {
-        match input {
-            "Newtons" | "N" | "Newtons (N)" => UnitEnum::Force(ForceUnit::Newtons),
-            "Pounds Force" | "lbf" | "Pounds Force (lbf)" => UnitEnum::Force(ForceUnit::PoundsForce),
-            "Kilograms Force" | "kgf" | "Kilograms Force (kgf)" => UnitEnum::Force(ForceUnit::KilogramsForce),
-            _ => panic!("Invalid unit"),
-        }
-    }
-}
-
-/// Implementing Display trait for ForceUnit
-impl std::fmt::Display for ForceUnit {
-    /// Display the unit name
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    /// Get the name of the unit of measure.
+    /// For example, "Newtons".
+    fn name (&self) -> String {
         match self {
-            Self::Newtons => write!(f, "Newtons"),
-            Self::PoundsForce => write!(f, "Pounds Force"),
-            Self::KilogramsForce => write!(f, "Kilograms Force"),
-        }
-    }
-}
-
-/// Implementing Debug trait for ForceUnit
-impl std::fmt::Debug for ForceUnit {
-    /// Implementing Debug trait for ForceUnit
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{self}")
-    }
-}
-
-// ------------------------------------------------------------
-
-/// Enum for PressureUnit
-pub enum PressureUnit {
-    Pascals,
-    Kilopascals,
-    Megapascals,
-    Hectopascals,
-    InchesOfMercury,
-    MillimetersOfMercury,
-    Milibars,
-    Atmospheres,
-    PoundsPerSquareInch,
-}
-
-/// Implementing Unit trait for PressureUnit
-impl Unit for PressureUnit {
-    /// Create a new instance of the Unit with the default value
-    fn new() -> UnitEnum {
-        UnitEnum::Pressure(PressureUnit::Pascals)
-    }
-
-    /// Display the full name with abbreviation
-    /// Example: "Pascals (Pa)"
-    fn name_full(&self) -> String {
-        String::from("{&self.fmt(f)} ({&self.abbr()})")
-    }
-
-    /// Display the short name without abbreviation.
-    /// Example: "Pascals"
-    fn name_short(&self) -> String {
-        String::from("{&self.fmt(f)}")
-    }
-
-    /// Get the abbreviation of the unit.
-    /// Example: "Pa"
-    fn abbr(&self) -> String {
-        match self {
-            Self::Pascals => String::from("Pa"),
-            Self::Kilopascals => String::from("kPa"),
-            Self::Megapascals => String::from("MPa"),
-            Self::Hectopascals => String::from("hPa"),
-            Self::InchesOfMercury => String::from("inHg"),
-            Self::MillimetersOfMercury => String::from("mmHg"),
-            Self::Milibars => String::from("mbar"),
-            Self::Atmospheres => String::from("atm"),
-            Self::PoundsPerSquareInch => String::from("psi"),
+            ForceUnit::Newtons => "Newtons".to_string(),
+            ForceUnit::PoundsForce => "Pounds Force".to_string(),
+            ForceUnit::KilogramsForce => "Kilograms Force".to_string(),
         }
     }
 
-    /// Convert a value from one unit to another.
-    /// The value is first converted to Pascals,
-    /// then converted to the target unit.
-    fn convert(&self, value: f64, from_unit: &UnitEnum, to_unit: &UnitEnum) -> f64 {
-        let value_pascals = match from_unit {
-            UnitEnum::Pressure(unit) => match unit.abbr().as_str() {
-                "Pa" => value,
-                "kPa" => value * 1000.0,
-                "MPa" => value * 1000000.0,
-                "hPa" => value * 100.0,
-                "inHg" => value * 3386.39,
-                "mmHg" => value * 133.322,
-                "mbar" => value,
-                "atm" => value * 101325.0,
-                "psi" => value * 6894.76,
-                _ => panic!("Invalid unit"),
-            },
-            _ => panic!("Invalid unit type for Pressure conversion"),
-        };
-        match to_unit {
-            UnitEnum::Pressure(unit) => match unit.abbr().as_str() {
-                "Pa" => value_pascals,
-                "kPa" => value_pascals / 1000.0,
-                "MPa" => value_pascals / 1000000.0,
-                "hPa" => value_pascals / 100.0,
-                "inHg" => value_pascals / 3386.39,
-                "mmHg" => value_pascals / 133.322,
-                "mbar" => value_pascals,
-                "atm" => value_pascals / 101325.0,
-                "psi" => value_pascals / 6894.76,
-                _ => panic!("Invalid unit"),
-            },
-            _ => panic!("Invalid unit type for Pressure conversion"),
-        }
-    }
-
-    /// Get the default unit for the given unit type
-    /// Default unit is Pascals
-    fn default() -> UnitEnum {
-        UnitEnum::Pressure(PressureUnit::Pascals)
-    }
-
-    /// Create a new instance of the Unit from a &str input.
-    /// The function supports full name, short name, and abbreviation.
-    /// Example: "Pascals" | "Pa" | "Pascals (Pa)"
-    fn from_str(&self, input: &str) -> UnitEnum {
-        match input {
-            "Pascals" | "Pa" | "Pascals (Pa)" => UnitEnum::Pressure(PressureUnit::Pascals),
-            "Kilopascals" | "kPa" | "Kilopascals (kPa)" => UnitEnum::Pressure(PressureUnit::Kilopascals),
-            "Megapascals" | "MPa" | "Megapascals (MPa)" => UnitEnum::Pressure(PressureUnit::Megapascals),
-            "Hectopascals" | "hPa" | "Hectopascals (hPa)" => UnitEnum::Pressure(PressureUnit::Hectopascals),
-            "Inches Of Mercury" | "inHg" | "Inches Of Mercury (inHg)" => UnitEnum::Pressure(PressureUnit::InchesOfMercury),
-            "Millimeters Of Mercury" | "mmHg" | "Millimeters Of Mercury (mmHg)" => UnitEnum::Pressure(PressureUnit::MillimetersOfMercury),
-            "Milibars" | "mbar" | "Milibars (mbar)" => UnitEnum::Pressure(PressureUnit::Milibars),
-            "Atmospheres" | "atm" | "Atmospheres (atm)" => UnitEnum::Pressure(PressureUnit::Atmospheres),
-            "Pounds Per Square Inch" | "psi" | "Pounds Per Square Inch (psi)" => UnitEnum::Pressure(PressureUnit::PoundsPerSquareInch),
-            _ => panic!("Invalid unit"),
-        }
-    }
-
-}
-
-/// Implementing Display trait for PressureUnit
-impl std::fmt::Display for PressureUnit {
-    /// Display the unit name
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            Self::Pascals => write!(f, "Pascals"),
-            Self::Kilopascals => write!(f, "Kilopascals"),
-            Self::Megapascals => write!(f, "Megapascals"),
-            Self::Hectopascals => write!(f, "Hectopascals"),
-            Self::InchesOfMercury => write!(f, "Inches Of Mercury"),
-            Self::MillimetersOfMercury => write!(f, "Millimeters Of Mercury"),
-            Self::Milibars => write!(f, "Milibars"),
-            Self::Atmospheres => write!(f, "Atmospheres"),
-            Self::PoundsPerSquareInch => write!(f, "Pounds Per Square Inch"),
-        }
-    }
-}
-
-/// Implementing Debug trait for PressureUnit
-/// Display the unit name
-impl std::fmt::Debug for PressureUnit {
-    /// Implementing Debug trait for PressureUnit
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{self}")
-    }
-}
-
-// ------------------------------------------------------------
-
-/// Enum for BearingUnit
-/// Radians are the default unit.
-pub enum BearingUnit {
-    Radians,
-    Degrees,
-    Gradians,
-    Mils,
-}
-
-/// Implementing Unit trait for BearingUnit
-/// 
-/// BearingUnit is used to represent angles in navigation and direction.
-/// Radians are the default unit.
-impl Unit for BearingUnit {
-    /// Create a new instance of the Unit with the default value
-    fn new() -> UnitEnum {
-        UnitEnum::Bearing(BearingUnit::Radians)
-    }
-    
-    /// Display the full name with abbreviation
-    /// Example: "Degrees (°)"
-    fn name_full(&self) -> String {
-        String::from("{&self.fmt(f)} ({&self.abbr()})")
-    }
-
-    /// Display the short name without abbreviation.
-    /// Example: "Degrees"
-    fn name_short(&self) -> String {
-        String::from("{&self.fmt(f)}")
-    }
-
-    /// Get the abbreviation of the unit.
-    /// Example: "°"
-    fn abbr(&self) -> String {
-        match self {
-            Self::Radians => String::from("rad"),
-            Self::Degrees => String::from("°"),
-            Self::Gradians => String::from("grad"),
-            Self::Mils => String::from("mil"),
-        }
-    }
-
-    /// Convert a value from one unit to another.
-    /// The value is first converted to Degrees,
-    /// then converted to the target unit.
-    fn convert(&self, value: f64, from_unit: &UnitEnum, to_unit: &UnitEnum) -> f64 {
-        // store the value in radians
-        let value_radians = match from_unit {
-            UnitEnum::Bearing(unit) => match unit.abbr().as_str() {
-                "rad" => value,
-                "°" => value * 0.0174533,
-                "grad" => value * 0.015708,
-                "mil" => value * 0.001,
-                _ => panic!("Invalid unit"),
-            },
-            _ => panic!("Invalid unit type for BearingUnit conversion"),
+    /// Convert a value from one unit of measure to another.
+    /// To eliminate exponentially growing nested match statements,
+    /// each value is converted to the base unit of measure (e.g. meters or kilograms),
+    /// then converted to the desired unit of measure.
+    fn convert (&self, value: f64, to_unit: &Self) -> f64 {
+        // Convert to newtons
+        let force_newtons = match self {
+            ForceUnit::Newtons => value,
+            ForceUnit::PoundsForce => value * 4.44822,
+            ForceUnit::KilogramsForce => value * 9.80665,
         };
 
-        // convert from default (radians) to target unit
-        match to_unit {
-            UnitEnum::Bearing(unit) => match unit.abbr().as_str() {
-                "rad" => value_radians,
-                "°" => value_radians / 0.0174533,
-                "grad" => value_radians / 0.015708,
-                "mil" => value_radians / 0.001,
-                _ => panic!("Invalid unit"),
-            },
-            _ => panic!("Invalid unit type for BearingUnit conversion"),
-        }
-    }
-
-    /// Get the default unit for the given unit type
-    /// Default unit is Degrees
-    fn default() -> UnitEnum {
-        UnitEnum::Bearing(BearingUnit::Radians)
-    }
-
-    /// Create a new instance of the Unit from a &str input.
-    /// The function supports full name, short name, and abbreviation.
-    /// Example: "Degrees" | "°" | "Degrees (°)"
-    fn from_str(&self, input: &str) -> UnitEnum {
-        match input {
-            "Degrees" | "°" | "Degrees (°)" => UnitEnum::Bearing(BearingUnit::Degrees),
-            "Radians" | "rad" | "Radians (rad)" => UnitEnum::Bearing(BearingUnit::Radians),
-            "Gradians" | "grad" | "Gradians (grad)" => UnitEnum::Bearing(BearingUnit::Gradians),
-            "Mils" | "mil" | "Mils (mil)" => UnitEnum::Bearing(BearingUnit::Mils),
-            _ => panic!("Invalid unit"),
-        }
-    }
-}
-
-/// Implementing Display trait for BearingUnit
-/// Display the unit name
-/// Example: "Degrees"
-impl std::fmt::Display for BearingUnit {
-    /// Display the unit name
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            Self::Degrees => write!(f, "Degrees"),
-            Self::Radians => write!(f, "Radians"),
-            Self::Gradians => write!(f, "Gradians"),
-            Self::Mils => write!(f, "Mils"),
-        }
-    }
-}
-
-/// Implementing Debug trait for BearingUnit
-impl std::fmt::Debug for BearingUnit {
-    /// Implementing Debug trait for BearingUnit
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{self}")
-    }
-}
-
-// ------------------------------------------------------------
-
-/// Enum for AccelerationUnit
-/// MetersPerSecondSquared is the default unit.
-pub enum AccelerationUnit {
-    MetersPerSecondSquared,
-    FeetPerSecondSquared,
-    KilometersPerSecondSquared,
-    MilesPerHourPerSecond,
-    StandardGravity,
-}
-
-/// Implementing Unit trait for AccelerationUnit
-impl Unit for AccelerationUnit {
-    /// Create a new instance of the Unit with the default value
-    fn new() -> UnitEnum {
-        UnitEnum::Acceleration(AccelerationUnit::MetersPerSecondSquared)
-    }
-
-    /// Display the full name with abbreviation
-    /// Example: "Meters Per Second Squared (m/s²)"
-    fn name_full(&self) -> String {
-        String::from("{&self.fmt(f)} ({&self.abbr()})")
-    }
-
-    /// Display the short name without abbreviation.
-    /// Example: "Meters Per Second Squared"
-    fn name_short(&self) -> String {
-        String::from("{&self.fmt(f)}")
-    }
-
-    /// Get the abbreviation of the unit.
-    /// Example: "m/s²"
-    fn abbr(&self) -> String {
-        match self {
-            Self::MetersPerSecondSquared => String::from("m/s²"),
-            Self::FeetPerSecondSquared => String::from("ft/s²"),
-            Self::KilometersPerSecondSquared => String::from("km/s²"),
-            Self::MilesPerHourPerSecond => String::from("mph/s"),
-            Self::StandardGravity => String::from("g"),
-        }
-    }
-
-    /// Convert a value from one unit to another.
-    /// The value is first converted to Meters Per Second Squared,
-    /// then converted to the target unit.
-    fn convert(&self, value: f64, from_unit: &UnitEnum, to_unit: &UnitEnum) -> f64 {
-        let value_mps2 = match from_unit {
-            UnitEnum::Acceleration(unit) => match unit.abbr().as_str() {
-                "m/s²" => value,
-                "ft/s²" => value * 0.3048,
-                "km/s²" => value * 1000.0,
-                "mph/s" => value * 0.44704,
-                "g" => value * 9.80665,
-                _ => panic!("Invalid unit"),
-            },
-            _ => panic!("Invalid unit type for AccelerationUnit conversion"),
+        // Convert to desired unit
+        let force_output = match to_unit {
+            ForceUnit::Newtons => force_newtons,
+            ForceUnit::PoundsForce => force_newtons / 4.44822,
+            ForceUnit::KilogramsForce => force_newtons / 9.80665,
         };
-        match to_unit {
-            UnitEnum::Acceleration(unit) => match unit.abbr().as_str() {
-                "m/s²" => value_mps2,
-                "ft/s²" => value_mps2 / 0.3048,
-                "km/s²" => value_mps2 / 1000.0,
-                "mph/s" => value_mps2 / 0.44704,
-                "g" => value_mps2 / 9.80665,
-                _ => panic!("Invalid unit"),
-            },
-            _ => panic!("Invalid unit type for AccelerationUnit conversion"),
+        force_output
+    }
+
+    /// Return a vector Strings of all of the names of the units of measure.
+    fn all_names () -> Vec<String> {
+        vec![
+            ForceUnit::Newtons.name(),
+            ForceUnit::PoundsForce.name(),
+            ForceUnit::KilogramsForce.name(),
+        ]
+    }
+
+    /// Return a vector Strings of all of the abbreviations of the units of measure.
+    fn all_abbrs () -> Vec<String> {
+        vec![
+            ForceUnit::Newtons.abbr(),
+            ForceUnit::PoundsForce.abbr(),
+            ForceUnit::KilogramsForce.abbr(),
+        ]
+    }
+
+    /// Return a vector Strings of all of the names and abbreviations of the units of measure.
+    fn all_names_and_abbrs () -> Vec<String> {
+        vec![
+            ForceUnit::Newtons.name_and_abbr(),
+            ForceUnit::PoundsForce.name_and_abbr(),
+            ForceUnit::KilogramsForce.name_and_abbr(),
+        ]
+    }
+
+    /// Create a new instance of the unit of measure from a string.
+    /// The function takes either the abbr, name, or name_and_abbr of the unit of measure.
+    /// For example: "N" | "Newtons" | "Newtons (N)" -> Some(ForceUnit::Newtons)
+    fn from_str (unit_str: &str) -> Option<Self> {
+        // abbreviations
+        let newtons_abbr = ForceUnit::Newtons.abbr();
+        let poundsforce_abbr = ForceUnit::PoundsForce.abbr();
+        let kilogramsforce_abbr = ForceUnit::KilogramsForce.abbr();
+
+        // names
+        let newtons_name = ForceUnit::Newtons.name();
+        let poundsforce_name = ForceUnit::PoundsForce.name();
+        let kilogramsforce_name = ForceUnit::KilogramsForce.name();
+
+        // full names
+        let newtons_name_and_abbr = ForceUnit::Newtons.name_and_abbr();
+        let poundsforce_name_and_abbr = ForceUnit::PoundsForce.name_and_abbr();
+        let kilogramsforce_name_and_abbr = ForceUnit::KilogramsForce.name_and_abbr();
+
+        // match the unit str to the unit using the abbreviations, names, and full names variables
+        match unit_str {
+            s if s == newtons_abbr || s == newtons_name || s == newtons_name_and_abbr => Some(ForceUnit::Newtons),
+            s if s == poundsforce_abbr || s == poundsforce_name || s == poundsforce_name_and_abbr => Some(ForceUnit::PoundsForce),
+            s if s == kilogramsforce_abbr || s == kilogramsforce_name || s == kilogramsforce_name_and_abbr => Some(ForceUnit::KilogramsForce),
+            _ => None,
         }
     }
 
-    /// Get the default unit for the given unit type
-    /// Default unit is Meters Per Second Squared
-    fn default() -> UnitEnum {
-        UnitEnum::Acceleration(AccelerationUnit::MetersPerSecondSquared)
-    }
-
-    /// Create a new instance of the Unit from a &str input.
-    /// The function supports full name, short name, and abbreviation.
-    /// Example: "Meters Per Second Squared" | "m/s²" | "Meters Per Second Squared (m/s²)"
-    fn from_str(&self, input: &str) -> UnitEnum {
-        match input {
-            "Meters Per Second Squared" | "m/s²" | "Meters Per Second Squared (m/s²)" => UnitEnum::Acceleration(AccelerationUnit::MetersPerSecondSquared),
-            "Feet Per Second Squared" | "ft/s²" | "Feet Per Second Squared (ft/s²)" => UnitEnum::Acceleration(AccelerationUnit::FeetPerSecondSquared),
-            "Kilometers Per Second Squared" | "km/s²" | "Kilometers Per Second Squared (km/s²)" => UnitEnum::Acceleration(AccelerationUnit::KilometersPerSecondSquared),
-            "Miles Per Hour Per Second" | "mph/s" | "Miles Per Hour Per Second (mph/s)" => UnitEnum::Acceleration(AccelerationUnit::MilesPerHourPerSecond),
-            "Standard Gravity" | "g" | "Standard Gravity (g)" => UnitEnum::Acceleration(AccelerationUnit::StandardGravity),
-            _ => panic!("Invalid unit"),
-        }
-    }
-    
-}
-
-/// Implementing Display trait for AccelerationUnit
-/// Display the unit name
-/// Example: "Meters Per Second Squared"
-impl std::fmt::Display for AccelerationUnit {
-    /// Display the unit name
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match self {
-            Self::MetersPerSecondSquared => write!(f, "Meters Per Second Squared"),
-            Self::FeetPerSecondSquared => write!(f, "Feet Per Second Squared"),
-            Self::KilometersPerSecondSquared => write!(f, "Kilometers Per Second Squared"),
-            Self::MilesPerHourPerSecond => write!(f, "Miles Per Hour Per Second"),
-            Self::StandardGravity => write!(f, "Standard Gravity"),
-        }
+    /// Return the default unit of measure.
+    /// The default unit of measure is newtons.
+    fn default () -> Self {
+        ForceUnit::Newtons
     }
 }
 
-/// Implementing Debug trait for AccelerationUnit
-/// Display the unit name
-/// Example: "Meters Per Second Squared"
-impl std::fmt::Debug for AccelerationUnit {
-    /// Implementing Debug trait for AccelerationUnit
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{self}")
-    }
-}
+
+
