@@ -270,3 +270,49 @@ impl Display for VelocityValue {
         write!(f, "Value: {} {}", self.value(), self.unit().name_and_abbr())
     }
 }
+
+// --------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
+
+/// Define a struct for an force measurement.
+/// The Force struct implements the ValueWithUnit trait for the ForceUnit enum.
+/// It stores a value and a unit of measure for a force measurement.
+///
+/// The Force struct provides methods to get the value and unit of the measurement,
+/// as well as to convert the value to a different unit of measure.
+#[derive(Debug, Copy, Clone)]
+pub struct ForceValue {
+    value: f64,
+    unit: ForceUnit,
+}
+
+/// Implement the Display trait for the ForceValue struct.
+impl ValueWithUnit<ForceUnit> for ForceValue {
+    /// Get the value of the measurement.
+    fn value (&self) -> f64 {
+        self.value
+    }
+
+    /// Get the unit of measure of the measurement.
+    fn unit (&self) -> ForceUnit {
+        self.unit
+    }
+
+    /// Convert the value of the measurement to a different unit of measure.
+    /// The value is converted to the base unit of measure (e.g., meters or kilograms),
+    /// then converted to the desired unit of measure.
+    /// The function returns a new ForceValue struct with the converted value and unit.
+    fn convert (&self, to_unit: &ForceUnit) -> ForceValue {
+        ForceValue {
+            value: self.unit.convert(self.value, to_unit),
+            unit: to_unit.clone(),
+        }
+    }
+}
+
+impl Display for ForceValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "Value: {} {}", self.value(), self.unit().name_and_abbr())
+    }
+}
