@@ -37,8 +37,8 @@ pub trait ValueWithUnit<T: UnitOfMeasure>: Debug
 /// as well as to convert the value to a different unit of measure.
 #[derive(Debug, Copy, Clone)]
 pub struct LengthValue {
-    value: f64,
-    unit: LengthUnit,
+    pub value: f64,
+    pub unit: LengthUnit,
 }
 
 /// Implement the Display trait for the LengthValue struct.
@@ -84,8 +84,8 @@ impl Display for LengthValue {
 /// as well as to convert the value to a different unit of measure.
 #[derive(Debug, Copy, Clone)]
 pub struct MassValue {
-    value: f64,
-    unit: MassUnit,
+    pub value: f64,
+    pub unit: MassUnit,
 }
 
 /// Implementation of the ValueWithUnit trait for MassValue.
@@ -144,8 +144,8 @@ impl Display for MassValue {
 /// 
 #[derive(Debug, Copy, Clone)]
 pub struct TimeValue {
-    value: f64,
-    unit: TimeUnit,
+    pub value: f64,
+    pub unit: TimeUnit,
 }
 
 /// Implement the Display trait for the TimeValue struct.
@@ -190,8 +190,8 @@ impl Display for TimeValue {
 /// as well as to convert the value to a different unit of measure.
 #[derive(Debug, Copy, Clone)]
 pub struct TemperatureValue {
-    value: f64,
-    unit: TemperatureUnit,
+    pub value: f64,
+    pub unit: TemperatureUnit,
 }
 
 /// Implement the Display trait for the TemperatureValue struct.
@@ -237,8 +237,8 @@ impl Display for TemperatureValue {
 /// as well as to convert the value to a different unit of measure.
 #[derive(Debug, Copy, Clone)]
 pub struct VelocityValue {
-    value: f64,
-    unit: VelocityUnit,
+    pub value: f64,
+    pub unit: VelocityUnit,
 }
 
 /// Implement the Display trait for the VelocityValue struct.
@@ -283,8 +283,8 @@ impl Display for VelocityValue {
 /// as well as to convert the value to a different unit of measure.
 #[derive(Debug, Copy, Clone)]
 pub struct ForceValue {
-    value: f64,
-    unit: ForceUnit,
+    pub value: f64,
+    pub unit: ForceUnit,
 }
 
 /// Implement the Display trait for the ForceValue struct.
@@ -330,8 +330,8 @@ impl Display for ForceValue {
 /// as well as to convert the value to a different unit of measure.
 #[derive(Debug, Copy, Clone)]
 pub struct PressureValue {
-    value: f64,
-    unit: PressureUnit,
+    pub value: f64,
+    pub unit: PressureUnit,
 }
 
 /// Implement the Display trait for the PressureValue struct.
