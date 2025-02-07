@@ -947,4 +947,168 @@ impl UnitOfMeasure for ForceUnit {
 }
 
 
+// --------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
 
+/// Define the units of measure for pressure.
+/// The base unit of measure is pascals.
+#[derive(Debug, Copy, Clone)]
+pub enum PressureUnit {
+    Pascals,
+    Kilopascals,
+    Megapascals,
+    Bars,
+    PoundsPerSquareInch,
+    Atmospheres,
+    Torrs,
+}
+
+/// Implement the UnitOfMeasure trait for the PressureUnit enum.
+impl UnitOfMeasure for PressureUnit {
+    /// Get the abbreviation of the unit of measure.
+    /// For example, "Pa" for pascals.
+    fn abbr (&self) -> String {
+        match self {
+            PressureUnit::Pascals => "Pa".to_string(),
+            PressureUnit::Kilopascals => "kPa".to_string(),
+            PressureUnit::Megapascals => "MPa".to_string(),
+            PressureUnit::Bars => "bar".to_string(),
+            PressureUnit::PoundsPerSquareInch => "psi".to_string(),
+            PressureUnit::Atmospheres => "atm".to_string(),
+            PressureUnit::Torrs => "Torr".to_string(),
+        }
+    }
+
+    /// Get the name of the unit of measure.
+    /// For example, "Pascals".
+    fn name (&self) -> String {
+        match self {
+            PressureUnit::Pascals => "Pascals".to_string(),
+            PressureUnit::Kilopascals => "Kilopascals".to_string(),
+            PressureUnit::Megapascals => "Megapascals".to_string(),
+            PressureUnit::Bars => "Bars".to_string(),
+            PressureUnit::PoundsPerSquareInch => "Pounds per Square Inch".to_string(),
+            PressureUnit::Atmospheres => "Atmospheres".to_string(),
+            PressureUnit::Torrs => "Torrs".to_string(),
+        }
+    }
+
+    /// Convert a value from one unit of measure to another.
+    /// To eliminate exponentially growing nested match statements,
+    /// each value is converted to the base unit of measure (e.g. meters or kilograms),
+    /// then converted to the desired unit of measure.
+    fn convert (&self, value: f64, to_unit: &Self) -> f64 {
+        // Convert to pascals
+        let pressure_pascals = match self {
+            PressureUnit::Pascals => value,
+            PressureUnit::Kilopascals => value * 1000.0,
+            PressureUnit::Megapascals => value * 1_000_000.0,
+            PressureUnit::Bars => value * 100_000.0,
+            PressureUnit::PoundsPerSquareInch => value * 6894.76,
+            PressureUnit::Atmospheres => value * 101_325.0,
+            PressureUnit::Torrs => value * 133.322,
+        };
+
+        // Convert to desired unit
+        let pressure_output = match to_unit {
+            PressureUnit::Pascals => pressure_pascals,
+            PressureUnit::Kilopascals => pressure_pascals / 1000.0,
+            PressureUnit::Megapascals => pressure_pascals / 1_000_000.0,
+            PressureUnit::Bars => pressure_pascals / 100_000.0,
+            PressureUnit::PoundsPerSquareInch => pressure_pascals / 6894.76,
+            PressureUnit::Atmospheres => pressure_pascals / 101_325.0,
+            PressureUnit::Torrs => pressure_pascals / 133.322,
+        };
+        pressure_output
+    }
+
+    /// Return a vector Strings of all of the names of the units of measure.
+    fn all_names () -> Vec<String> {
+        vec![
+            PressureUnit::Pascals.name(),
+            PressureUnit::Kilopascals.name(),
+            PressureUnit::Megapascals.name(),
+            PressureUnit::Bars.name(),
+            PressureUnit::PoundsPerSquareInch.name(),
+            PressureUnit::Atmospheres.name(),
+            PressureUnit::Torrs.name(),
+        ]
+    }
+
+    /// Return a vector Strings of all of the abbreviations of the units of measure.
+    fn all_abbrs () -> Vec<String> {
+        vec![
+            PressureUnit::Pascals.abbr(),
+            PressureUnit::Kilopascals.abbr(),
+            PressureUnit::Megapascals.abbr(),
+            PressureUnit::Bars.abbr(),
+            PressureUnit::PoundsPerSquareInch.abbr(),
+            PressureUnit::Atmospheres.abbr(),
+            PressureUnit::Torrs.abbr(),
+        ]
+    }
+
+    /// Return a vector Strings of all of the names and abbreviations of the units of measure.
+    fn all_names_and_abbrs () -> Vec<String> {
+        vec![
+            PressureUnit::Pascals.name_and_abbr(),
+            PressureUnit::Kilopascals.name_and_abbr(),
+            PressureUnit::Megapascals.name_and_abbr(),
+            PressureUnit::Bars.name_and_abbr(),
+            PressureUnit::PoundsPerSquareInch.name_and_abbr(),
+            PressureUnit::Atmospheres.name_and_abbr(),
+            PressureUnit::Torrs.name_and_abbr(),
+        ]
+    }
+
+    /// Create a new instance of the unit of measure from a string.
+    /// The function takes either the abbr, name, or name_and_abbr of the unit of measure.
+    /// For example: "Pa" | "Pascals" | "Pascals (Pa)" -> Some(PressureUnit::Pascals)
+    fn from_str (unit_str: &str) -> Option<Self> {
+        // abbreviations
+        let pascals_abbr = PressureUnit::Pascals.abbr();
+        let kilopascals_abbr = PressureUnit::Kilopascals.abbr();
+        let megapascals_abbr = PressureUnit::Megapascals.abbr();
+        let bars_abbr = PressureUnit::Bars.abbr();
+        let poundspersquareinch_abbr = PressureUnit::PoundsPerSquareInch.abbr();
+        let atmospheres_abbr = PressureUnit::Atmospheres.abbr();
+        let torrs_abbr = PressureUnit::Torrs.abbr();
+
+        // names
+        let pascals_name = PressureUnit::Pascals.name();
+        let kilopascals_name = PressureUnit::Kilopascals.name();
+        let megapascals_name = PressureUnit::Megapascals.name();
+        let bars_name = PressureUnit::Bars.name();
+        let poundspersquareinch_name = PressureUnit::PoundsPerSquareInch.name();
+        let atmospheres_name = PressureUnit::Atmospheres.name();
+        let torrs_name = PressureUnit::Torrs.name();
+
+        // full names
+        let pascals_name_and_abbr = PressureUnit::Pascals.name_and_abbr();
+        let kilopascals_name_and_abbr = PressureUnit::Kilopascals.name_and_abbr();
+        let megapascals_name_and_abbr = PressureUnit::Megapascals.name_and_abbr();
+        let bars_name_and_abbr = PressureUnit::Bars.name_and_abbr();
+        let poundspersquareinch_name_and_abbr = PressureUnit::PoundsPerSquareInch.name_and_abbr();
+        let atmospheres_name_and_abbr = PressureUnit::Atmospheres.name_and_abbr();
+        let torrs_name_and_abbr = PressureUnit::Torrs.name_and_abbr();
+
+        // match the unit str to the unit using the abbreviations, names, and full names variables
+        match unit_str {
+            s if s == pascals_abbr || s == pascals_name || s == pascals_name_and_abbr => Some(PressureUnit::Pascals),
+            s if s == kilopascals_abbr || s == kilopascals_name || s == kilopascals_name_and_abbr => Some(PressureUnit::Kilopascals),
+            s if s == megapascals_abbr || s == megapascals_name || s == megapascals_name_and_abbr => Some(PressureUnit::Megapascals),
+            s if s == bars_abbr || s == bars_name || s == bars_name_and_abbr => Some(PressureUnit::Bars),
+            s if s == poundspersquareinch_abbr || s == poundspersquareinch_name || s == poundspersquareinch_name_and_abbr => Some(PressureUnit::PoundsPerSquareInch),
+            s if s == atmospheres_abbr || s == atmospheres_name || s == atmospheres_name_and_abbr => Some(PressureUnit::Atmospheres),
+            s if s == torrs_abbr || s == torrs_name || s == torrs_name_and_abbr => Some(PressureUnit::Torrs),
+            _ => None,
+        }
+    }
+
+    /// Return the default unit of measure.
+    /// The default unit of measure is pascals.
+    fn default () -> Self {
+        PressureUnit::Pascals
+    }
+}

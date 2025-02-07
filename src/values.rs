@@ -316,3 +316,50 @@ impl Display for ForceValue {
         write!(f, "Value: {} {}", self.value(), self.unit().name_and_abbr())
     }
 }
+
+// --------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
+
+/// Define a struct for an pressure measurement.
+/// 
+/// The Pressure struct implements the ValueWithUnit trait for the PressureUnit enum.
+/// It stores a value and a unit of measure for a pressure measurement.
+/// 
+/// The Pressure struct provides methods to get the value and unit of the measurement,
+/// as well as to convert the value to a different unit of measure.
+#[derive(Debug, Copy, Clone)]
+pub struct PressureValue {
+    value: f64,
+    unit: PressureUnit,
+}
+
+/// Implement the Display trait for the PressureValue struct.
+impl ValueWithUnit<PressureUnit> for PressureValue {
+    /// Get the value of the measurement.
+    fn value (&self) -> f64 {
+        self.value
+    }
+
+    /// Get the unit of measure of the measurement.
+    fn unit (&self) -> PressureUnit {
+        self.unit
+    }
+
+    /// Convert the value of the measurement to a different unit of measure.
+    /// The value is converted to the base unit of measure (e.g., meters or kilograms),
+    /// then converted to the desired unit of measure.
+    /// The function returns a new PressureValue struct with the converted value and unit.
+    fn convert (&self, to_unit: &PressureUnit) -> PressureValue {
+        PressureValue {
+            value: self.unit.convert(self.value, to_unit),
+            unit: to_unit.clone(),
+        }
+    }
+}
+
+impl Display for PressureValue {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "Value: {} {}", self.value(), self.unit().name_and_abbr())
+    }
+}

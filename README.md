@@ -18,7 +18,7 @@ Implimentation of units enums and value structs is in progress. The following ta
 | ✓ | ✓ | Temperature | Kelvin | K |
 | ✓ | ✓ | Velocity | Meters per Second | m/s |
 | ✓ | ✓ | Force | Newton | N |
-|  |  | Pressure | Pascal | Pa |
+| ✓ | ✓ | Pressure | Pascal | Pa |
 |  |  | Bearing | Radian | rad |
 |  |  | Acceleration | Meters per Second Squared | m/s^2 |
 |  |  | Mixing Ratio | Kilogram per Kilogram | kg/kg |
