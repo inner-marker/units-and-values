@@ -956,6 +956,7 @@ impl UnitOfMeasure for ForceUnit {
 #[derive(Debug, Copy, Clone)]
 pub enum PressureUnit {
     Pascals,
+    Hectopascals,
     Kilopascals,
     Megapascals,
     Bars,
@@ -971,6 +972,7 @@ impl UnitOfMeasure for PressureUnit {
     fn abbr (&self) -> String {
         match self {
             PressureUnit::Pascals => "Pa".to_string(),
+            PressureUnit::Hectopascals => "hPa".to_string(),
             PressureUnit::Kilopascals => "kPa".to_string(),
             PressureUnit::Megapascals => "MPa".to_string(),
             PressureUnit::Bars => "bar".to_string(),
@@ -985,6 +987,7 @@ impl UnitOfMeasure for PressureUnit {
     fn name (&self) -> String {
         match self {
             PressureUnit::Pascals => "Pascals".to_string(),
+            PressureUnit::Hectopascals => "Hectopascals".to_string(),
             PressureUnit::Kilopascals => "Kilopascals".to_string(),
             PressureUnit::Megapascals => "Megapascals".to_string(),
             PressureUnit::Bars => "Bars".to_string(),
@@ -1002,6 +1005,7 @@ impl UnitOfMeasure for PressureUnit {
         // Convert to pascals
         let pressure_pascals = match self {
             PressureUnit::Pascals => value,
+            PressureUnit::Hectopascals => value * 100.0,
             PressureUnit::Kilopascals => value * 1000.0,
             PressureUnit::Megapascals => value * 1_000_000.0,
             PressureUnit::Bars => value * 100_000.0,
@@ -1013,6 +1017,7 @@ impl UnitOfMeasure for PressureUnit {
         // Convert to desired unit
         let pressure_output = match to_unit {
             PressureUnit::Pascals => pressure_pascals,
+            PressureUnit::Hectopascals => pressure_pascals / 100.0,
             PressureUnit::Kilopascals => pressure_pascals / 1000.0,
             PressureUnit::Megapascals => pressure_pascals / 1_000_000.0,
             PressureUnit::Bars => pressure_pascals / 100_000.0,
@@ -1027,6 +1032,7 @@ impl UnitOfMeasure for PressureUnit {
     fn all_names () -> Vec<String> {
         vec![
             PressureUnit::Pascals.name(),
+            PressureUnit::Hectopascals.name(),
             PressureUnit::Kilopascals.name(),
             PressureUnit::Megapascals.name(),
             PressureUnit::Bars.name(),
@@ -1040,6 +1046,7 @@ impl UnitOfMeasure for PressureUnit {
     fn all_abbrs () -> Vec<String> {
         vec![
             PressureUnit::Pascals.abbr(),
+            PressureUnit::Hectopascals.abbr(),
             PressureUnit::Kilopascals.abbr(),
             PressureUnit::Megapascals.abbr(),
             PressureUnit::Bars.abbr(),
@@ -1053,6 +1060,7 @@ impl UnitOfMeasure for PressureUnit {
     fn all_names_and_abbrs () -> Vec<String> {
         vec![
             PressureUnit::Pascals.name_and_abbr(),
+            PressureUnit::Hectopascals.name_and_abbr(),
             PressureUnit::Kilopascals.name_and_abbr(),
             PressureUnit::Megapascals.name_and_abbr(),
             PressureUnit::Bars.name_and_abbr(),
@@ -1068,6 +1076,7 @@ impl UnitOfMeasure for PressureUnit {
     fn from_str (unit_str: &str) -> Option<Self> {
         // abbreviations
         let pascals_abbr = PressureUnit::Pascals.abbr();
+        let hectopascals_abbr = PressureUnit::Hectopascals.abbr();
         let kilopascals_abbr = PressureUnit::Kilopascals.abbr();
         let megapascals_abbr = PressureUnit::Megapascals.abbr();
         let bars_abbr = PressureUnit::Bars.abbr();
@@ -1077,6 +1086,7 @@ impl UnitOfMeasure for PressureUnit {
 
         // names
         let pascals_name = PressureUnit::Pascals.name();
+        let hectopascals_name = PressureUnit::Hectopascals.name();
         let kilopascals_name = PressureUnit::Kilopascals.name();
         let megapascals_name = PressureUnit::Megapascals.name();
         let bars_name = PressureUnit::Bars.name();
@@ -1086,6 +1096,7 @@ impl UnitOfMeasure for PressureUnit {
 
         // full names
         let pascals_name_and_abbr = PressureUnit::Pascals.name_and_abbr();
+        let hectopascals_name_and_abbr = PressureUnit::Hectopascals.name_and_abbr();
         let kilopascals_name_and_abbr = PressureUnit::Kilopascals.name_and_abbr();
         let megapascals_name_and_abbr = PressureUnit::Megapascals.name_and_abbr();
         let bars_name_and_abbr = PressureUnit::Bars.name_and_abbr();
@@ -1096,6 +1107,7 @@ impl UnitOfMeasure for PressureUnit {
         // match the unit str to the unit using the abbreviations, names, and full names variables
         match unit_str {
             s if s == pascals_abbr || s == pascals_name || s == pascals_name_and_abbr => Some(PressureUnit::Pascals),
+            s if s == hectopascals_abbr || s == hectopascals_name || s == hectopascals_name_and_abbr => Some(PressureUnit::Hectopascals),
             s if s == kilopascals_abbr || s == kilopascals_name || s == kilopascals_name_and_abbr => Some(PressureUnit::Kilopascals),
             s if s == megapascals_abbr || s == megapascals_name || s == megapascals_name_and_abbr => Some(PressureUnit::Megapascals),
             s if s == bars_abbr || s == bars_name || s == bars_name_and_abbr => Some(PressureUnit::Bars),
@@ -1109,6 +1121,6 @@ impl UnitOfMeasure for PressureUnit {
     /// Return the default unit of measure.
     /// The default unit of measure is pascals.
     fn default () -> Self {
-        PressureUnit::Pascals
+        PressureUnit::Hectopascals
     }
 }
