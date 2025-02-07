@@ -21,7 +21,22 @@ use std::fmt::{Debug, Display};
 pub trait UnitOfMeasure: Debug
     + Copy
     + Clone
+    + PartialEq
+
 {
+
+    const GENERIC_NAME: &str;
+
+    /// Display the generic name for the unit of measure.
+    /// 
+    /// # Example: "Length"
+    fn generic_name () -> String {
+        Self::GENERIC_NAME.to_string()
+    }
+    fn generic_name_self (&self) -> String {
+        Self::GENERIC_NAME.to_string()
+    }
+    
     /// Get the name of the unit of measure with its abbreviation.
     /// For example, "Meters (m)".
     fn name_and_abbr (&self) -> String {
@@ -67,7 +82,7 @@ pub trait UnitOfMeasure: Debug
 
 /// Define the units of measure for length.
 /// The base unit of measure is meters.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum LengthUnit {
     Millimeters,
     Centimeters,
@@ -81,6 +96,18 @@ pub enum LengthUnit {
 }
 
 impl UnitOfMeasure for LengthUnit {
+    const GENERIC_NAME: &str = "Length";
+
+    /// Display the generic name for the unit of measure.
+    /// 
+    /// # Example: "Length"
+    fn generic_name () -> String {
+        Self::GENERIC_NAME.to_string()
+    }
+    fn generic_name_self (&self) -> String {
+        Self::GENERIC_NAME.to_string()
+    }
+
     /// Get the abbreviation of the unit of measure.
     /// For example, "m" for meters.
     fn abbr (&self) -> String {
@@ -275,7 +302,7 @@ impl UnitOfMeasure for LengthUnit {
 /// let mass_output = mass_unit_test.convert(mass_value, &MassUnit::Pounds);
 /// assert_eq!(mass_output, 2.20462);
 /// ```
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum MassUnit {
     Kilograms,
     PoundsMass,
@@ -283,6 +310,8 @@ pub enum MassUnit {
 
 /// Implement the UnitOfMeasure trait for the MassUnit enum.
 impl UnitOfMeasure for MassUnit {
+    const GENERIC_NAME: &str = "Mass";
+    
     /// Get the abbreviation of the unit of measure.
     /// For example, "kg" for kilograms.
     fn abbr (&self) -> String {
@@ -391,7 +420,7 @@ impl UnitOfMeasure for MassUnit {
 /// convert a value to a different unit of measure, and return all unit names and abbreviations.
 /// 
 /// The default unit of measure is seconds.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum TimeUnit {
     Seconds,
     Minutes,
@@ -403,6 +432,8 @@ pub enum TimeUnit {
 
 /// Implement the UnitOfMeasure trait for the TimeUnit enum.
 impl UnitOfMeasure for TimeUnit {
+    const GENERIC_NAME: &str = "Time";
+    
     /// Get the abbreviation of the unit of measure.
     /// For example, "s" for seconds.
     fn abbr (&self) -> String {
@@ -552,7 +583,7 @@ impl UnitOfMeasure for TimeUnit {
 /// convert a value to a different unit of measure, and return all unit names and abbreviations.
 /// 
 /// The default unit of measure is Kelvin.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum TemperatureUnit {
     Kelvin,
     Celsius,
@@ -567,6 +598,15 @@ pub enum TemperatureUnit {
 /// 
 /// The default unit of measure is Kelvin.
 impl UnitOfMeasure for TemperatureUnit {
+    const GENERIC_NAME: &str = "Temperature";
+
+    /// Get the generic name for the unit of measure.
+    /// 
+    /// For example, "Temperature".
+    fn generic_name () -> String {
+        "Temperature".to_string()
+    }
+    
     /// Get the abbreviation of the unit of measure.
     /// For example, "K" for Kelvin.
     fn abbr (&self) -> String {
@@ -690,7 +730,7 @@ impl UnitOfMeasure for TemperatureUnit {
 
 /// Define the units of measure for velocity.
 /// The base unit of measure is meters per second.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum VelocityUnit {
     MetersPerSecond,
     KilometersPerHour,
@@ -701,6 +741,15 @@ pub enum VelocityUnit {
 
 /// Implement the UnitOfMeasure trait for the VelocityUnit enum.
 impl UnitOfMeasure for VelocityUnit {
+    const GENERIC_NAME: &str = "Velocity";
+    
+    /// Get the generic name for the unit of measure.
+    /// 
+    /// For example, "Velocity".
+    fn generic_name () -> String {
+        "Velocity".to_string()
+    }
+    
     /// Get the abbreviation of the unit of measure.
     /// For example, "m/s" for meters per second.
     fn abbr (&self) -> String {
@@ -834,7 +883,7 @@ impl UnitOfMeasure for VelocityUnit {
 
 /// Define the units of measure for force.
 /// The base unit of measure is newtons.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum ForceUnit {
     Newtons,
     PoundsForce,
@@ -843,6 +892,15 @@ pub enum ForceUnit {
 
 /// Implement the UnitOfMeasure trait for the ForceUnit enum.
 impl UnitOfMeasure for ForceUnit {
+    const GENERIC_NAME: &str = "Force";
+    
+    /// Get the generic name for the unit of measure.
+    /// 
+    /// For example, "Force".
+    fn generic_name () -> String {
+        "Force".to_string()
+    }
+    
     /// Get the abbreviation of the unit of measure.
     /// For example, "N" for newtons.
     fn abbr (&self) -> String {
@@ -953,7 +1011,7 @@ impl UnitOfMeasure for ForceUnit {
 
 /// Define the units of measure for pressure.
 /// The base unit of measure is pascals.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum PressureUnit {
     Hectopascals,
     InchesOfMercury,
@@ -961,6 +1019,7 @@ pub enum PressureUnit {
     Kilopascals,
     Megapascals,
     Bars,
+    Millibars,
     PoundsPerSquareInch,
     Atmospheres,
     Torrs,
@@ -968,6 +1027,15 @@ pub enum PressureUnit {
 
 /// Implement the UnitOfMeasure trait for the PressureUnit enum.
 impl UnitOfMeasure for PressureUnit {
+    const GENERIC_NAME: &str = "Pressure";
+    
+    /// Get the generic name for the unit of measure.
+    /// 
+    /// For example, "Pressure".
+    fn generic_name () -> String {
+        "Pressure".to_string()
+    }
+    
     /// Get the abbreviation of the unit of measure.
     /// For example, "Pa" for pascals.
     fn abbr (&self) -> String {
@@ -978,6 +1046,7 @@ impl UnitOfMeasure for PressureUnit {
             PressureUnit::Kilopascals => "kPa".to_string(),
             PressureUnit::Megapascals => "MPa".to_string(),
             PressureUnit::Bars => "bar".to_string(),
+            PressureUnit::Millibars => "mbar".to_string(),
             PressureUnit::PoundsPerSquareInch => "psi".to_string(),
             PressureUnit::Atmospheres => "atm".to_string(),
             PressureUnit::Torrs => "Torr".to_string(),
@@ -994,6 +1063,7 @@ impl UnitOfMeasure for PressureUnit {
             PressureUnit::Kilopascals => "Kilopascals".to_string(),
             PressureUnit::Megapascals => "Megapascals".to_string(),
             PressureUnit::Bars => "Bars".to_string(),
+            PressureUnit::Millibars => "Millibars".to_string(),
             PressureUnit::PoundsPerSquareInch => "Pounds per Square Inch".to_string(),
             PressureUnit::Atmospheres => "Atmospheres".to_string(),
             PressureUnit::Torrs => "Torrs".to_string(),
@@ -1013,6 +1083,7 @@ impl UnitOfMeasure for PressureUnit {
             PressureUnit::Kilopascals => value * 1000.0,
             PressureUnit::Megapascals => value * 1_000_000.0,
             PressureUnit::Bars => value * 100_000.0,
+            PressureUnit::Millibars => value * 100.0,
             PressureUnit::PoundsPerSquareInch => value * 6894.76,
             PressureUnit::Atmospheres => value * 101_325.0,
             PressureUnit::Torrs => value * 133.322,
@@ -1026,6 +1097,7 @@ impl UnitOfMeasure for PressureUnit {
             PressureUnit::Kilopascals => pressure_pascals / 1000.0,
             PressureUnit::Megapascals => pressure_pascals / 1_000_000.0,
             PressureUnit::Bars => pressure_pascals / 100_000.0,
+            PressureUnit::Millibars => pressure_pascals / 100.0,
             PressureUnit::PoundsPerSquareInch => pressure_pascals / 6894.76,
             PressureUnit::Atmospheres => pressure_pascals / 101_325.0,
             PressureUnit::Torrs => pressure_pascals / 133.322,
@@ -1042,6 +1114,7 @@ impl UnitOfMeasure for PressureUnit {
             PressureUnit::Kilopascals.name(),
             PressureUnit::Megapascals.name(),
             PressureUnit::Bars.name(),
+            PressureUnit::Millibars.name(),
             PressureUnit::PoundsPerSquareInch.name(),
             PressureUnit::Atmospheres.name(),
             PressureUnit::Torrs.name(),
@@ -1057,6 +1130,7 @@ impl UnitOfMeasure for PressureUnit {
             PressureUnit::Kilopascals.abbr(),
             PressureUnit::Megapascals.abbr(),
             PressureUnit::Bars.abbr(),
+            PressureUnit::Millibars.abbr(),
             PressureUnit::PoundsPerSquareInch.abbr(),
             PressureUnit::Atmospheres.abbr(),
             PressureUnit::Torrs.abbr(),
@@ -1072,6 +1146,7 @@ impl UnitOfMeasure for PressureUnit {
             PressureUnit::Kilopascals.name_and_abbr(),
             PressureUnit::Megapascals.name_and_abbr(),
             PressureUnit::Bars.name_and_abbr(),
+            PressureUnit::Millibars.name_and_abbr(),
             PressureUnit::PoundsPerSquareInch.name_and_abbr(),
             PressureUnit::Atmospheres.name_and_abbr(),
             PressureUnit::Torrs.name_and_abbr(),
@@ -1089,6 +1164,7 @@ impl UnitOfMeasure for PressureUnit {
         let kilopascals_abbr = PressureUnit::Kilopascals.abbr();
         let megapascals_abbr = PressureUnit::Megapascals.abbr();
         let bars_abbr = PressureUnit::Bars.abbr();
+        let mbar_abbr = PressureUnit::Millibars.abbr();
         let poundspersquareinch_abbr = PressureUnit::PoundsPerSquareInch.abbr();
         let atmospheres_abbr = PressureUnit::Atmospheres.abbr();
         let torrs_abbr = PressureUnit::Torrs.abbr();
@@ -1100,6 +1176,7 @@ impl UnitOfMeasure for PressureUnit {
         let kilopascals_name = PressureUnit::Kilopascals.name();
         let megapascals_name = PressureUnit::Megapascals.name();
         let bars_name = PressureUnit::Bars.name();
+        let mbar_name = PressureUnit::Millibars.name();
         let poundspersquareinch_name = PressureUnit::PoundsPerSquareInch.name();
         let atmospheres_name = PressureUnit::Atmospheres.name();
         let torrs_name = PressureUnit::Torrs.name();
@@ -1111,6 +1188,7 @@ impl UnitOfMeasure for PressureUnit {
         let kilopascals_name_and_abbr = PressureUnit::Kilopascals.name_and_abbr();
         let megapascals_name_and_abbr = PressureUnit::Megapascals.name_and_abbr();
         let bars_name_and_abbr = PressureUnit::Bars.name_and_abbr();
+        let mbar_name_and_abbr = PressureUnit::Millibars.name_and_abbr();
         let poundspersquareinch_name_and_abbr = PressureUnit::PoundsPerSquareInch.name_and_abbr();
         let atmospheres_name_and_abbr = PressureUnit::Atmospheres.name_and_abbr();
         let torrs_name_and_abbr = PressureUnit::Torrs.name_and_abbr();
@@ -1123,6 +1201,7 @@ impl UnitOfMeasure for PressureUnit {
             s if s == kilopascals_abbr || s == kilopascals_name || s == kilopascals_name_and_abbr => Some(PressureUnit::Kilopascals),
             s if s == megapascals_abbr || s == megapascals_name || s == megapascals_name_and_abbr => Some(PressureUnit::Megapascals),
             s if s == bars_abbr || s == bars_name || s == bars_name_and_abbr => Some(PressureUnit::Bars),
+            s if s == mbar_abbr || s == mbar_name || s == mbar_name_and_abbr => Some(PressureUnit::Millibars),
             s if s == poundspersquareinch_abbr || s == poundspersquareinch_name || s == poundspersquareinch_name_and_abbr => Some(PressureUnit::PoundsPerSquareInch),
             s if s == atmospheres_abbr || s == atmospheres_name || s == atmospheres_name_and_abbr => Some(PressureUnit::Atmospheres),
             s if s == torrs_abbr || s == torrs_name || s == torrs_name_and_abbr => Some(PressureUnit::Torrs),
@@ -1136,3 +1215,6 @@ impl UnitOfMeasure for PressureUnit {
         PressureUnit::Hectopascals
     }
 }
+
+// --------------------------------------------------------------------------------------------------
+

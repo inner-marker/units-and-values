@@ -11,6 +11,7 @@ pub trait ValueWithUnit<T: UnitOfMeasure>: Debug
     + Copy
     + Clone
     + Display
+    + PartialEq
 {
     /// Get the value of the measurement.
     fn value (&self) -> f64;
@@ -23,6 +24,9 @@ pub trait ValueWithUnit<T: UnitOfMeasure>: Debug
     /// then converted to the desired unit of measure.
     /// The new unit of measure is stored in the `unit` field.
     fn convert (&self, to_unit: &T) -> Self;
+
+    /// Create a new ValueWithUnit instance with the specified value and unit.
+    fn new(value: f64, unit: T) -> Self;
 }
 
 // --------------------------------------------------------------------------------------------------
@@ -35,7 +39,7 @@ pub trait ValueWithUnit<T: UnitOfMeasure>: Debug
 /// It stores a value and a unit of measure for a length measurement.
 /// The Length struct provides methods to get the value and unit of the measurement,
 /// as well as to convert the value to a different unit of measure.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct LengthValue {
     pub value: f64,
     pub unit: LengthUnit,
@@ -63,6 +67,14 @@ impl ValueWithUnit<LengthUnit> for LengthValue {
             unit: to_unit.clone(),
         }
     }
+
+    /// Create a new LengthValue instance with the specified value and unit.
+    fn new(value: f64, unit: LengthUnit) -> LengthValue {
+        LengthValue {
+            value,
+            unit,
+        }
+    }
 }
 
 impl Display for LengthValue {
@@ -82,7 +94,7 @@ impl Display for LengthValue {
 /// 
 /// The Mass struct provides methods to get the value and unit of the measurement,
 /// as well as to convert the value to a different unit of measure.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct MassValue {
     pub value: f64,
     pub unit: MassUnit,
@@ -122,6 +134,14 @@ impl ValueWithUnit<MassUnit> for MassValue {
             unit: to_unit.clone(),
         }
     }
+
+    /// Create a new MassValue instance with the specified value and unit.
+    fn new(value: f64, unit: MassUnit) -> MassValue {
+        MassValue {
+            value,
+            unit,
+        }
+    }
 }
 
 /// Impliment the Display trait for the MassValue struct.
@@ -142,7 +162,7 @@ impl Display for MassValue {
 /// The Time struct provides methods to get the value and unit of the measurement,
 /// as well as to convert the value to a different unit of measure.
 /// 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct TimeValue {
     pub value: f64,
     pub unit: TimeUnit,
@@ -170,6 +190,14 @@ impl ValueWithUnit<TimeUnit> for TimeValue {
             unit: to_unit.clone(),
         }
     }
+
+    /// Create a new TimeValue instance with the specified value and unit.
+    fn new(value: f64, unit: TimeUnit) -> TimeValue {
+        TimeValue {
+            value,
+            unit,
+        }
+    }
 }
 
 impl Display for TimeValue {
@@ -188,7 +216,7 @@ impl Display for TimeValue {
 ///
 /// The Temperature struct provides methods to get the value and unit of the measurement,
 /// as well as to convert the value to a different unit of measure.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct TemperatureValue {
     pub value: f64,
     pub unit: TemperatureUnit,
@@ -216,7 +244,14 @@ impl ValueWithUnit<TemperatureUnit> for TemperatureValue {
             unit: to_unit.clone(),
         }
     }
-    
+
+    /// Create a new TemperatureValue instance with the specified value and unit.
+    fn new(value: f64, unit: TemperatureUnit) -> TemperatureValue {
+        TemperatureValue {
+            value,
+            unit,
+        }
+    }
 }
 
 impl Display for TemperatureValue {
@@ -235,7 +270,7 @@ impl Display for TemperatureValue {
 /// 
 /// The Velocity struct provides methods to get the value and unit of the measurement,
 /// as well as to convert the value to a different unit of measure.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct VelocityValue {
     pub value: f64,
     pub unit: VelocityUnit,
@@ -263,6 +298,14 @@ impl ValueWithUnit<VelocityUnit> for VelocityValue {
             unit: to_unit.clone(),
         }
     }
+
+    /// Create a new VelocityValue instance with the specified value and unit.
+    fn new(value: f64, unit: VelocityUnit) -> VelocityValue {
+        VelocityValue {
+            value,
+            unit,
+        }
+    }
 }
 
 impl Display for VelocityValue {
@@ -281,7 +324,7 @@ impl Display for VelocityValue {
 ///
 /// The Force struct provides methods to get the value and unit of the measurement,
 /// as well as to convert the value to a different unit of measure.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct ForceValue {
     pub value: f64,
     pub unit: ForceUnit,
@@ -309,6 +352,14 @@ impl ValueWithUnit<ForceUnit> for ForceValue {
             unit: to_unit.clone(),
         }
     }
+
+    /// Create a new ForceValue instance with the specified value and unit.
+    fn new(value: f64, unit: ForceUnit) -> ForceValue {
+        ForceValue {
+            value,
+            unit,
+        }
+    }
 }
 
 impl Display for ForceValue {
@@ -328,7 +379,7 @@ impl Display for ForceValue {
 /// 
 /// The Pressure struct provides methods to get the value and unit of the measurement,
 /// as well as to convert the value to a different unit of measure.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct PressureValue {
     pub value: f64,
     pub unit: PressureUnit,
@@ -356,10 +407,93 @@ impl ValueWithUnit<PressureUnit> for PressureValue {
             unit: to_unit.clone(),
         }
     }
+
+    /// Create a new PressureValue instance with the specified value and unit.
+    fn new(value: f64, unit: PressureUnit) -> PressureValue {
+        PressureValue {
+            value,
+            unit,
+        }
+    }
 }
 
 impl Display for PressureValue {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "Value: {} {}", self.value(), self.unit().name_and_abbr())
+    }
+}
+
+// --------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------
+
+
+/// Define a struct for a measurement.
+/// 
+/// The struct implements the ValueWithUnit trait for the any enum that impliments UnitOfMeasure trait.
+/// It stores a value and a unit of measure for the measurement.
+/// 
+/// The struct provides methods to get the value and unit of the measurement,
+/// as well as to convert the value to a different unit of measure.
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub struct GenericValueWithUnit <U: UnitOfMeasure> {
+    pub value: f64,
+    pub unit: U,
+}
+
+/// Implement the Display trait for the GenericValueWithUnit struct.
+impl <U: UnitOfMeasure> GenericValueWithUnit<U>{
+    /// Get the value of the measurement.
+    pub fn value (&self) -> f64 {
+        self.value
+    }
+
+    /// Get the unit of measure of the measurement.
+    pub fn unit (&self) -> U {
+        self.unit
+    }
+
+    /// Convert the value of the measurement to a different unit of measure.
+    /// The value is converted to the base unit of measure (e.g., meters or kilograms),
+    /// then converted to the desired unit of measure.
+    /// The function returns a new GenericValueWithUnit struct with the converted value and unit.
+    pub fn convert (&self, to_unit: &U) -> GenericValueWithUnit<U> {
+        GenericValueWithUnit {
+            value: self.unit.convert(self.value, to_unit),
+            unit: to_unit.clone(),
+        }
+    }
+
+    /// Create a new GenericValueWithUnit instance with the specified value and unit.
+    pub fn new(value: f64, unit: U) -> GenericValueWithUnit<U> {
+        GenericValueWithUnit {
+            value,
+            unit,
+        }
+    }
+}
+
+impl<U: UnitOfMeasure> Display for GenericValueWithUnit<U> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{} Value: {:.2} {}", U::generic_name(), self.value(), self.unit().name_and_abbr())
+    }
+}
+
+// --------------------------------------------------------------------------------------------------
+
+// Test the GenericValue struct
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_generic_value() {
+        let value = GenericValueWithUnit::new(10.0, LengthUnit::Meters);
+        assert_eq!(value.value(), 10.0);
+        assert_eq!(value.unit(), LengthUnit::Meters);
+        assert_eq!(value.convert(&LengthUnit::Kilometers).value(), 0.01);
+
+        // Test whether the Display trait is implemented correctly
+        assert_eq!(format!("{}", value), "Length Value: 10.00 Meters (m)");
     }
 }
